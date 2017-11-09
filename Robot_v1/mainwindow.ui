@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>695</width>
+    <height>704</height>
+   </rect>
+  </property>
+  <property name="font">
+   <font>
+    <family>Microsoft JhengHei</family>
+   </font>
+  </property>
+  <property name="windowTitle">
+   <string>Robot_v1</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="myresourse.qrc">
+    <normaloff>:/lights/IMG_Robot.png</normaloff>:/lights/IMG_Robot.png</iconset>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <layout class="QGridLayout" name="gridLayout">
+    <property name="leftMargin">
+     <number>30</number>
+    </property>
+    <property name="rightMargin">
+     <number>30</number>
+    </property>
+    <property name="bottomMargin">
+     <number>9</number>
+    </property>
+    <property name="horizontalSpacing">
+     <number>3</number>
+    </property>
+    <property name="verticalSpacing">
+     <number>4</number>
+    </property>
+    <item row="3" column="1">
+     <widget class="QPushButton" name="Button_Stop">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="statusTip">
+       <string>Stop running robot tasks.</string>
+      </property>
+      <property name="text">
+       <string>Stop</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QPushButton" name="Button_Quit">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="statusTip">
+       <string>Quit the application.</string>
+      </property>
+      <property name="text">
+       <string>Quit</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="Button_Start">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>40</height>
+       </size>
+      </property>
+      <property name="statusTip">
+       <string>Start running robot tasks from waiting list.</string>
+      </property>
+      <property name="text">
+       <string>Start</string>
+      </property>
+      <property name="autoDefault">
+       <bool>true</bool>
+      </property>
+      <property name="default">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="3">
+     <widget class="QScrollArea" name="scrollArea">
+      <property name="minimumSize">
+       <size>
+        <width>600</width>
+        <height>270</height>
+       </size>
+      </property>
+      <property name="widgetResizable">
+       <bool>true</bool>
+      </property>
+      <widget class="QWidget" name="scrollAreaWidgetContents">
+       <property name="geometry">
+        <rect>
+         <x>0</x>
+         <y>0</y>
+         <width>633</width>
+         <height>268</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
+    </item>
+    <item row="2" column="0" colspan="3">
+     <widget class="QGroupBox" name="GroupBox_Task">
+      <property name="title">
+       <string>Task</string>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="1">
+        <widget class="QLabel" name="label_2">
+         <property name="text">
+          <string>InAction tasks</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="2">
+        <widget class="QLabel" name="label_3">
+         <property name="font">
+          <font>
+           <family>Microsoft JhengHei</family>
+          </font>
+         </property>
+         <property name="text">
+          <string>Done tasks</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QTableWidget" name="tableWidget_Waiting">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="font">
+          <font>
+           <family>Microsoft JhengHei</family>
+          </font>
+         </property>
+         <property name="statusTip">
+          <string>Show the tasks waiting to excute.</string>
+         </property>
+         <column>
+          <property name="text">
+           <string>Command</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Device</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>DeviceNumber</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="0" column="0">
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Waiting tasks</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="1">
+        <widget class="QTableWidget" name="tableWidget_InAction">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="statusTip">
+          <string>Show the excuting tasks. </string>
+         </property>
+         <column>
+          <property name="text">
+           <string>Command</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Device</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>DeviceNumber</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QTableWidget" name="tableWidget_Done">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>200</height>
+          </size>
+         </property>
+         <property name="statusTip">
+          <string>Show the tasks already finished.</string>
+         </property>
+         <column>
+          <property name="text">
+           <string>Command</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>Device</string>
+          </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>DeviceNumber</string>
+          </property>
+         </column>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="Ccd" name="ccd" native="true"/>
+    </item>
+    <item row="0" column="1">
+     <widget class="Robot" name="robot" native="true"/>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="myresourse.qrc">:/lights/IMG_Logo.gif</pixmap>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>695</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar">
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>Ccd</class>
+   <extends>QWidget</extends>
+   <header>ccd.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>Robot</class>
+   <extends>QWidget</extends>
+   <header>robot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources>
+  <include location="myresourse.qrc"/>
+ </resources>
+ <connections/>
+</ui>
