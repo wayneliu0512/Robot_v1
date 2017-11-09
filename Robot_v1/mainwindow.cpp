@@ -493,8 +493,8 @@ void MainWindow::on_Button_Start_clicked()
     if(systemState == START)
         return;
 
-//    if(!checkDeviceAllConnected())
-//        return;
+    if(!checkDeviceAllConnected())
+        return;
 
     if(preScanDialog == nullptr)
         createPreScanDialog();
