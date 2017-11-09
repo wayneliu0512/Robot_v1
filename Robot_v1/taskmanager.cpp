@@ -19,6 +19,8 @@ void TaskManager::run()
 {
     while(1)
     {
+        msleep(200);
+
         if(MainWindow::systemState == MainWindow::STOP)
         {
             qDebug() << "TaskManager Stop";
@@ -30,8 +32,6 @@ void TaskManager::run()
 
         if( (Robot::state == Robot::INACTION) || (MainWindow::systemAction == MainWindow::INACTION) )
             continue;
-
-        QThread::msleep(500);
 
         MainWindow::systemAction = MainWindow::INACTION;
 
