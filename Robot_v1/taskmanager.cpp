@@ -7,6 +7,7 @@
 
 TaskManager::TaskManager(QObject *parent) : QThread(parent)
 {
+//    在跨線程時, 若要使用connect傳送線程外的型別, 必須先做註冊的動作
     qRegisterMetaType<Task>("Task");
 }
 
@@ -19,6 +20,7 @@ void TaskManager::run()
 {
     while(1)
     {
+//        這個動作可以大幅降低CPU使用率
         msleep(200);
 
         if(MainWindow::systemState == MainWindow::STOP)

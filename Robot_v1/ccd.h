@@ -3,6 +3,8 @@
 
 #include <QWidget>
 
+/*Barcode Scanner*/
+
 class QTcpSocket;
 class Communication;
 class Task;

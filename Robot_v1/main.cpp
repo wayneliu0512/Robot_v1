@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
         QMessageBox::critical(&QWidget(), "Error", "DebugLog folder doesn't exist.");
         return 1;
     }
-
+//    安裝MessageHandler可以輸出QtDebug訊息
     qInstallMessageHandler(myMessageHandler);
 
     MainWindow w;

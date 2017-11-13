@@ -25,7 +25,7 @@ public:
     void connectToRobot();
     void updateBase();
 
-    static State state;//對於 外部 for read-only
+    static State state;
 
     Communication *communication;
 signals:

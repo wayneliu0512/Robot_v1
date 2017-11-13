@@ -1,8 +1,9 @@
 #ifndef PRESCANGROUPBOX_H
 #define PRESCANGROUPBOX_H
-
 #include <QWidget>
 #include <QMessageBox>
+
+/*GroupBox*/
 
 class DynamicSetting;
 
