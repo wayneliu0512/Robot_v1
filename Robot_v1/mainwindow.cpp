@@ -142,8 +142,14 @@ void MainWindow::readSettingFile()
         qWarning() << "Error: We couldn't read Setting.ini Option/ToolingLogPath";
         exit(1);
     }else{
-        QDir dir(setting.value("Option/ToolingLogPath").toString());
-        toolingLogPath = dir.separator();
+        QString path = setting.value("Option/ToolingLogPath").toString();
+        QDir dir(path);
+        if(!dir.exists())
+        {
+            QMessageBox::critical(this, "Read file Error", "Error: We couldn't find" + path);
+            exit(1);
+        }
+        toolingLogPath = path;
     }
 
     if(setting.value("Option/RobotLogPath") == QVariant())
@@ -152,7 +158,14 @@ void MainWindow::readSettingFile()
         qWarning() << "Error: We couldn't read Setting.ini Option/RobotLogPath";
         exit(1);
     }else{
-        robotLogPath = setting.value("Option/RobotLogPath").toString();
+        QString path = setting.value("Option/RobotLogPath").toString();
+        QDir dir(path);
+        if(!dir.exists())
+        {
+            QMessageBox::critical(this, "Read file Error", "Error: We couldn't find" + path);
+            exit(1);
+        }
+        robotLogPath = path;
     }
 
     if(setting.value("Option/ToolingQuantity") == QVariant())
