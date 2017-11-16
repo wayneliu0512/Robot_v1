@@ -57,39 +57,45 @@ void Client::openSerialPort()
 }
 
 void Client::readyRead_serial()
-{  
+{
     static QByteArray dataBuffer;
-
     dataBuffer.append(serial->readAll());
 
     qDebug() << "dataBuffer << " + dataBuffer;
 
+    QRegularExpression reg("[@]{1}(?<text>\\w*)[;]{1}");
+    QRegularExpressionMatch match = reg.match(dataBuffer);
+
     //DOS Boot
-    if(dataBuffer.contains(";"))
+    if(match.hasMatch())
     {
-        qDebug() << "data << " + dataBuffer;
-        if(dataBuffer.contains("PASS"))
+        QString captureStr = match.captured("text");
+        qDebug() << "dataConfirm << " + captureStr;
+        if(captureStr == "PASSF")
         {
-            qDebug() << "Test pass";
             timer->stop();
 
-            dataBuffer.clear();
-            exit(1);
-        }else if(dataBuffer.contains("FAIL"))
+            qDebug() << "Final test pass";
+        }else if(captureStr == "FAILF")
         {
-            qDebug() << "Test fail";
             timer->stop();
 
-            dataBuffer.clear();
-            exit(1);
+            qDebug() << "Final test fail";
+        }else if(captureStr == "PASS")
+        {
+            timerCounter = 0;
+
+            qDebug() << "This test pass";
+        }else if(captureStr == "FAIL")
+        {
+            timerCounter = 0;
+
+            qDebug() << "This test fail";
         }else
         {
             timerCounter = 0;
 
-            serial->write("1");
-            qDebug() << "SendToDOS >> 1";
-            dataBuffer.remove(dataBuffer.length()-1,1);
-            qDebug() << "TestStage >> " + dataBuffer;
+            qDebug() << ">> " + captureStr;
         }
         dataBuffer.clear();
     }

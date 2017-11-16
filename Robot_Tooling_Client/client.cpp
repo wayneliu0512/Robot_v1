@@ -1,4 +1,5 @@
- #include "client.h"
+#include "client.h"
+#include <QRegularExpressionMatch>
 
 Client::Client(QObject *parent) :
     QObject(parent)
@@ -132,43 +133,48 @@ void Client::readyRead_socket()
 void Client::readyRead_serial()
 {  
     static QByteArray dataBuffer;
-
     dataBuffer.append(serial->readAll());
 
     qDebug() << "dataBuffer << " + dataBuffer;
 
+    QRegularExpression reg("[@]{1}(?<text>\\w*)[;]{1}");
+    QRegularExpressionMatch match = reg.match(dataBuffer);
+
     //DOS Boot
-    if(dataBuffer.contains(";"))
+    if(match.hasMatch())
     {
-        qDebug() << "data << " + dataBuffer;
-        if(dataBuffer.contains("PASS"))
+        QString captureStr = match.captured("text");
+        qDebug() << "dataConfirm << " + captureStr;
+        if(captureStr == "PASSF")
         {
-            qDebug() << "pass";
             timer->stop();
-            controlWAutoMESProgram_PASS();
 
-            dataBuffer.clear();
-        }else if(dataBuffer.contains("FAIL"))
+            controlWAutoMESProgram_PASS();              
+        }else if(captureStr == "FAILF")
         {
-            qDebug() << "fail";
             timer->stop();
+
             //controlWAutoMESProgram_FAIL();
-            serial->write("C");
-            qDebug() << "SendToDOS >> C";
-
             socket->write("test fail");
-            qDebug() << "Send to socket >> test fail";
+            qDebug() << "Send to socket >> test fail";            
+        }else if(captureStr == "PASS")
+        {
+            timerCounter = 0;
 
-            dataBuffer.clear();
+            socket->write("pass");
+            qDebug() << "SendToSocket >> pass";
+        }else if(captureStr == "FAIL")
+        {
+            timerCounter = 0;
+
+            socket->write("fail");
+            qDebug() << "SendToSocket >> fail";
         }else
         {
             timerCounter = 0;
 
-            serial->write("1");
-            qDebug() << "SendToDOS >> 1";
-            dataBuffer.remove(dataBuffer.length()-1,1);
-            socket->write(dataBuffer);
-            qDebug() << "SendToSocket >> " + dataBuffer;
+            socket->write(captureStr.toLatin1());
+            qDebug() << "SendToSocket >> " + captureStr;
         }
         dataBuffer.clear();
     }
@@ -199,18 +205,6 @@ void Client::timeoutForBoot()
 
     if(timerCounter <= timerSecond_checkOnline)
         return;
-
-//    if(reTestSignal)
-//    {
-//        controlWAutoMESProgram_TimeoutFAIL();
-//        reTestSignal = false;
-//    }
-//    else
-//    {
-//        socket->write("boot timeout");
-//        qDebug() << "SendToSocket >> boot timeout";
-//    }
-//    controlWAutoMESProgram_TimeoutFAIL();
 
     controlWAutoMESProgram_FAIL();
 
@@ -346,124 +340,3 @@ void Client::controlWAutoMESProgram_FAIL()
         qDebug() << "Send to socket >> AutoMES ERROR";
     }
 }
-
-//void Client::controlWAutoMESProgram_FAIL()
-//{
-//    WCHAR catcher[10000] = {0};
-//    WCHAR SN_char[100] = {0};
-//    WCHAR SN_Enter_char[100] = {0};
-
-//    QString SN_Enter = SN + "{ENTER}";
-//    SN_Enter.toWCharArray(SN_Enter_char);
-
-//    SN.toWCharArray(SN_char);
-
-//    serial->write("C");
-//    qDebug() << "SendToDOS >> C";
-
-//    //Count AutoMES resultText length
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
-//    int count = QString::fromWCharArray(catcher).length();
-
-//    //Serial Number textbox
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlFocus(L"Auto Shopfloor System v1.0.9", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:3]");
-//    AU3_Send(SN_Enter_char);
-
-//    //ERROR Code textbox
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Manual scan error code.", L"");
-//    AU3_ControlSetText(L"Manual scan error code.", L"", L"[CLASS:Edit; INSTANCE:1]", SN_char);
-//    AU3_ControlClick(L"Manual scan error code.", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-
-//    //Count AutoMES resultText length
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
-
-//    //Check AutoMES resultText
-//    if(QString::fromWCharArray(catcher).length() > count)
-//    {
-//        socket->write("test fail");
-//        qDebug() << "Send to socket >> test fail";
-//    }else
-//    {
-//        socket->write("AutoMES ERROR");
-//        qDebug() << "Send to socket >> AutoMES ERROR";
-//    }
-//}
-
-//void Client::controlWAutoMESProgram_TimeoutFAIL()
-//{
-//    WCHAR catcher[10000] = {0};
-//    WCHAR SN_char[100] = {0};
-//    WCHAR SN_Enter_char[100] = {0};
-//    WCHAR MAC1_char[100] = {0};
-//    WCHAR MAC1_Enter_char[100] = {0};
-//    WCHAR MAC1_Quantity_Enter_char[100] = {0};
-
-//    QString MAC1_Quantity_Enter = "1{ENTER}";
-//    MAC1_Quantity_Enter.toWCharArray(MAC1_Quantity_Enter_char);
-
-//    QString MAC1_Enter = MAC1 + "{ENTER}";
-//    MAC1_Enter.toWCharArray(MAC1_Enter_char);
-
-//    QString SN_Enter = SN + "{ENTER}";
-//    SN_Enter.toWCharArray(SN_Enter_char);
-
-//    SN.toWCharArray(SN_char);
-//    MAC1.toWCharArray(MAC1_char);
-
-//    serial->write("C");
-//    qDebug() << "SendToDOS >> C";
-
-//    //Count AutoMES resultText length
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
-//    int count = QString::fromWCharArray(catcher).length();
-
-//    //Serial Number textbox
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlFocus(L"Auto Shopfloor System v1.0.9", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:3]");
-//    AU3_Send(SN_Enter_char);
-
-//    //Click MessageBox
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Message", L"");
-//    AU3_ControlClick(L"Message", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-
-//    //MAC ID quantity textbox
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Manual brush bad", L"");
-//    AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_char);
-//    AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-
-//    //MAC ID textbox
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Manual brush bad", L"");
-//    AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_char);
-//    AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-
-//    //ERROR Code textbox
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Manual scan error code.", L"");
-//    AU3_ControlSetText(L"Manual scan error code.", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_char);
-//    AU3_ControlClick(L"Manual scan error code.", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-
-//    //Count AutoMES resultText length
-//    QThread::sleep(2);
-//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
-
-//    //Check AutoMES resultText
-//    if(QString::fromWCharArray(catcher).length() > count)
-//    {
-//        socket->write("test fail");
-//        qDebug() << "Send to socket >> test fail";
-//    }else
-//    {
-//        socket->write("AutoMES ERROR");
-//        qDebug() << "Send to socket >> AutoMES ERROR";
-//    }
-//}
