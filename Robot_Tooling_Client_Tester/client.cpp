@@ -75,27 +75,30 @@ void Client::readyRead_serial()
         {
             timer->stop();
 
-            qDebug() << "Final test pass";
+            testName = "final";
+            sendJson(testName, 1, 1);
         }else if(captureStr == "FAILF")
         {
             timer->stop();
 
-            qDebug() << "Final test fail";
+            testName = "final";
+            sendJson(testName, 1, 0);
         }else if(captureStr == "PASS")
         {
             timerCounter = 0;
 
-            qDebug() << "This test pass";
+            sendJson(testName, 1, 0);
         }else if(captureStr == "FAIL")
         {
             timerCounter = 0;
 
-            qDebug() << "This test fail";
+            sendJson(testName, 1, 0);
         }else
         {
             timerCounter = 0;
 
-            qDebug() << ">> " + captureStr;
+            testName = captureStr;
+            sendJson(testName, 0, 0);
         }
         dataBuffer.clear();
     }
@@ -116,6 +119,19 @@ void Client::readyRead_serial()
 
         dataBuffer.clear();
     }
+}
+
+void Client::sendJson(const QString &_testName, const int &_testStage, const int &_testResult)
+{
+    QJsonObject jsonObj;
+    jsonObj.insert("TestName", _testName);
+    jsonObj.insert("TestStage", _testStage);
+    jsonObj.insert("TestResult", _testResult);
+
+    QJsonDocument jsonDoc(jsonObj);
+
+//    socket->write(jsonDoc.toJson());
+    qDebug() << "SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson());
 }
 
 void Client::timeoutForBoot()
