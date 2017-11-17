@@ -27,6 +27,7 @@ Client::Client(QObject *parent) :
 
     timerForReConnect = new QTimer;
     connect(timerForReConnect, SIGNAL(timeout()), this, SLOT(reConnectTimeout()));
+
     //Open Serial port to connect DOS
     openSerialPort();
 
@@ -149,32 +150,33 @@ void Client::readyRead_serial()
         {
             timer->stop();
 
-            controlWAutoMESProgram_PASS();              
+            testName = "final";
+            if(controlWAutoMESProgram_PASS())
+                sendJson(testName, 1, 1);
+            else
+                sendJson(testName, 1, 0);
         }else if(captureStr == "FAILF")
         {
             timer->stop();
 
-            //controlWAutoMESProgram_FAIL();
-            socket->write("test fail");
-            qDebug() << "Send to socket >> test fail";            
+            testName = "final";
+            sendJson(testName, 1, 0);
         }else if(captureStr == "PASS")
         {
             timerCounter = 0;
 
-            socket->write("pass");
-            qDebug() << "SendToSocket >> pass";
+            sendJson(testName, 1, 0);
         }else if(captureStr == "FAIL")
         {
             timerCounter = 0;
 
-            socket->write("fail");
-            qDebug() << "SendToSocket >> fail";
+            sendJson(testName, 1, 0);
         }else
         {
             timerCounter = 0;
 
-            socket->write(captureStr.toLatin1());
-            qDebug() << "SendToSocket >> " + captureStr;
+            testName = captureStr;
+            sendJson(testName, 0, 0);
         }
         dataBuffer.clear();
     }
@@ -197,6 +199,19 @@ void Client::readyRead_serial()
     }
 }
 
+void Client::sendJson(const QString &_testName, const int &_testStage, const int &_testResult)
+{
+    QJsonObject jsonObj;
+    jsonObj.insert("TestName", _testName);
+    jsonObj.insert("TestStage", _testStage);
+    jsonObj.insert("TestResult", _testResult);
+
+    QJsonDocument jsonDoc(jsonObj);
+
+    socket->write(jsonDoc.toJson());
+    qDebug() << "SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson());
+}
+
 void Client::timeoutForBoot()
 {
     timerCounter++;
@@ -212,7 +227,7 @@ void Client::timeoutForBoot()
     timerCounter = 0;
 }
 
-void Client::controlWAutoMESProgram_PASS()
+bool Client::controlWAutoMESProgram_PASS()
 {
     WCHAR catcher[10000] = {0};
     WCHAR SN_char[100] = {0};
@@ -228,9 +243,6 @@ void Client::controlWAutoMESProgram_PASS()
 
     SN.toWCharArray(SN_char);
     MAC1.toWCharArray(MAC1_char);
-
-    serial->write("C");
-    qDebug() << "SendToDOS >> C";
 
     //Count AutoMES resultText length
     AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
@@ -260,12 +272,10 @@ void Client::controlWAutoMESProgram_PASS()
     //Check AutoMES resultText
     if(QString::fromWCharArray(catcher).length() > count)
     {
-        socket->write("test pass");
-        qDebug() << "Send to socket >> test pass";
+        return true;
     }else
     {
-        socket->write("AutoMES ERROR");
-        qDebug() << "Send to socket >> AutoMES ERROR";
+        return false;
     }
 }
 
@@ -285,9 +295,6 @@ void Client::controlWAutoMESProgram_FAIL()
 
     SN.toWCharArray(SN_char);
     MAC1.toWCharArray(MAC1_char);
-
-    serial->write("C");
-    qDebug() << "SendToDOS >> C";
 
     //Count AutoMES resultText length
     AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");

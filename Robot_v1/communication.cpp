@@ -128,7 +128,7 @@ void Communication::readyRead()
             QMessageBox::critical(this, "Error", "Communication::readyRead()/NO_ACK/JSON\nStill on development.");
             break;
         case NONE:
-            NO_ACK_ReadSocket();
+            NO_ACK_Json_ReadSocket();
             break;
         default:
             qCritical() << "Communication::readyRead()/NO_ACK/ Unknown protocol_Format";
@@ -242,10 +242,17 @@ void Communication::prependNextTask(const QString _ID)
     }
 }
 
-void Communication::NO_ACK_ReadSocket()
+void Communication::NO_ACK_Json_ReadSocket()
 {
-    QString str = socket->readAll();
-    emit receiveMessage(str);
+    QByteArray readData = socket->readAll();
+    qDebug() << "ReadFromNoAckJson: " + readData;
+
+    QJsonDocument doc = QJsonDocument::fromJson(readData);
+    QJsonValue testName_value = doc.object().value("TestName");
+    QJsonValue testStage_value = doc.object().value("TestStage");
+    QJsonValue testResult_value = doc.object().value("TestResult");
+
+    emit receiveMessage(testName_value.toString(), testStage_value.toInt(), testResult_value.toInt());
 }
 
 void Communication::sendXML(const QString &_ID, const QString &_startElement1, const QString &_startElement2,

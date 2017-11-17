@@ -30,7 +30,7 @@ Tooling::Tooling(QWidget *parent) :
     initializeClock();
     connect(&clockTimer, SIGNAL(timeout()), this, SLOT(clockUpdate()));
 
-    connect(communication, SIGNAL(receiveMessage(QString)), this, SLOT(receiveMessage(QString)));
+    connect(communication, SIGNAL(receiveMessage(QString,int,int)), this, SLOT(receiveMessage(QString,int,int)));
 
     messageBox.setIcon(QMessageBox::Critical);
     messageBox.setWindowTitle("Error");
@@ -82,22 +82,84 @@ void Tooling::setLogPath(const QString &_path)
     logPath = _path;
 }
 
-void Tooling::receiveMessage(const QString &_message)
+void Tooling::receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult)
 {
-    qDebug() << "Tooling" << QString::number(toolingNumber) << " receive message: " << _message;
-    testListUpdate(_message);
-    if(_message == "test pass")
+    if(_testName == "final")
     {
-        updateState(TEST_FINISHED_PASS);
-    }else if(_message == "test fail")
-    {
-        updateState(TEST_FINISHED_FAIL);
-    }else if(_message == "AutoMES ERROR")
-    {
-        updateState(TEST_FINISHED_FAIL);
+        receive_AllTestFinished(_testResult);
     }else
     {
-        qDebug() << "Tooling"<< QString::number(toolingNumber) << " exception message: " << _message;
+        switch (_testStage) {
+        case 0:
+            receive_TestStart(_testName);
+            break;
+        case 1:
+            receive_TestFinished(_testName, _testResult);
+            break;
+        default:
+            break;
+        }
+    }
+//    qDebug() << "Tooling" << QString::number(toolingNumber) << " receive message: " << _message;
+//    testListUpdate(_message);
+//    if(_message == "test pass")
+//    {
+//        updateState(TEST_FINISHED_PASS);
+//    }else if(_message == "test fail")
+//    {
+//        updateState(TEST_FINISHED_FAIL);
+//    }else if(_message == "AutoMES ERROR")
+//    {
+//        updateState(TEST_FINISHED_FAIL);
+//    }else
+//    {
+//        qDebug() << "Tooling"<< QString::number(toolingNumber) << " exception message: " << _message;
+//    }
+}
+
+void Tooling::receive_AllTestFinished(const int &_testResult)
+{
+    QString result;
+    if(_testResult == 1){
+        if(!updateState(TEST_FINISHED_PASS))
+            return;
+        result = "pass";
+    }
+    else{
+        if(!updateState(TEST_FINISHED_FAIL))
+            return;
+        result = "fail";
+    }
+
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "End Test" << result);
+    ui->treeWidget->insertTopLevelItem(0, item);
+
+    initialTestList();
+    initializeClock();
+}
+
+void Tooling::receive_TestStart(const QString &_testName)
+{
+    testStartTime = clockTime;
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing");
+    ui->treeWidget->insertTopLevelItem(0, item);
+}
+
+void Tooling::receive_TestFinished(const QString &_testName, const int &_testResult)
+{
+    QString result;
+    if(_testResult == 1)
+        result = "pass";
+    else
+        result = "fail";
+
+    for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
+    {
+        if(ui->treeWidget->topLevelItem(i)->text(0) == _testName)
+        {
+            ui->treeWidget->topLevelItem(i)->setText(1, result);
+            ui->treeWidget->topLevelItem(i)->setText(2, QString::number(testStartTime.secsTo(clockTime)));
+        }
     }
 }
 
@@ -221,8 +283,6 @@ bool Tooling::updateState(State _nextState)
             return false;
         }
         emit testFinished();
-        initialTestList();
-        initializeClock();
         ui->label_State->setText("TestFinished");
         Task::createAction(Task::TEST_FINISHED_TO_PASS, toolingNumber);
         emit addTask();
@@ -235,9 +295,8 @@ bool Tooling::updateState(State _nextState)
             return false;
         }
         emit testFinished();
-        initialTestList();
-        initializeClock();
         ui->label_State->setText("TestFinished");
+
         if(testTime == FIRST_TIME)
         {
             Task::createAction(Task::TEST_FAIL_TO_RETEST, toolingNumber);
@@ -280,13 +339,6 @@ bool Tooling::updateState(State _nextState)
     return true;
 }
 
-void Tooling::testListUpdate(const QString &_message)
-{
-    testItemList.append(_message);
-
-    ui->listWidget->insertItem(0, _message);
-}
-
 void Tooling::initialTestList()
 {
     QFile logFile(logPath + "\\" + SN + ".log");
@@ -295,14 +347,14 @@ void Tooling::initialTestList()
     out << "Tooling Number : " << QString::number(toolingNumber) << endl
         << "MAC Number     : " << MAC << endl
         << "Test time spend: " << clockTime.toString("mm:ss") << " (mins/secs)"<<endl
-        << "------------------------------"<< endl
-        << "TestItem:" << endl;
+        << "------------------------------"<< endl;
 
-    for(int i = 0; i < testItemList.length(); i++)
-        out << testItemList.at(i) << endl;
+    for(int i = ui->treeWidget->topLevelItemCount()-1; i >= 0; i--)
+        out << "Test item:" << ui->treeWidget->topLevelItem(i)->text(0)
+            << "\tResult:" << ui->treeWidget->topLevelItem(i)->text(1)
+            << "\tSpend time:" << ui->treeWidget->topLevelItem(i)->text(2) << "(sec)" << endl;
 
-    testItemList.clear();
-    ui->listWidget->clear();
+    ui->treeWidget->clear();
 }
 
 void Tooling::errorManage(const QString &_str)

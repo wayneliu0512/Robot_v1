@@ -45,7 +45,7 @@ signals:
     void receiveErrorDONE(const QString &_ID);
     void receiveSN(const QString &_SN);
     void receiveMAC(const QString &_MAC);
-    void receiveMessage(const QString &_message);
+    void receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult);
 private slots:
     void socketError();
     void readyRead();
@@ -55,7 +55,7 @@ private slots:
 private:
     void ACK_XML_ReadSocket();
     void ACK_JSON_ReadSocket();
-    void NO_ACK_ReadSocket();
+    void NO_ACK_Json_ReadSocket();
 //    檢查完成的任務後面還有沒有連結的任務, 有的話prepend到任務等待列表
     void prependNextTask(const QString _ID);
 //    各種協定參數

@@ -49,23 +49,27 @@ public slots:
     void receiveMAC(const QString &_MAC, const int &_toolingNumber);
     void errorManage(const QString &_str);
 private slots:
-    void receiveMessage(const QString &_message);
+    void receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult);
     void clockUpdate();
 private:
     Ui::Tooling *ui;
 
     void initializeClock();
     void initialTestList();
-    void testListUpdate(const QString &_message);
+
     bool updateState(State _nextState);
+
     void sendToClient_SN_MAC();
 //    void updateTestTime();
+    void receive_AllTestFinished(const int &_testResult);
+    void receive_TestStart(const QString &_testName);
+    void receive_TestFinished(const QString &_testName, const int &_testResult);
 
     State state = CONNECTED;
     TestTime testTime = ZERO_TIME;
     int toolingNumber;
     QTimer clockTimer;
-    QTime clockTime;
+    QTime clockTime, testStartTime;
     QString SN, MAC;
     QString logPath;
     QStringList testItemList;

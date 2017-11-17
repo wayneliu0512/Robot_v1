@@ -40,6 +40,8 @@ private:
     QTimer *timerForReConnect;
     int timerSecond_checkOnline,  timerCounter = 0;
 
+    QString testName;
+
     bool reTestSignal = false;
 
     //讀取Ini設定檔內容
@@ -51,7 +53,13 @@ private:
     //Start connect socket to host
     void connectToHost();
 
-    void controlWAutoMESProgram_PASS();
+//    testStage: 0 = Start test
+//               1 = Test finished
+//    testResult: 0 = fail
+//                1 = pass
+    void sendJson(const QString &_testName, const int &_testStage, const int &_testResult);
+
+    bool controlWAutoMESProgram_PASS();
     void controlWAutoMESProgram_FAIL();
     void controlWAutoMESProgram_TimeoutFAIL();
 
