@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QTime>
 #include <QMessageBox>
+#include <QSqlDatabase>
 
 class Communication;
 class QTcpSocket;
@@ -27,6 +28,7 @@ public:
     ~Tooling();
 
     void setToolingNumber(int _number);
+    void setToolingSN(const QString _toolingSN);
     void setSocket(QTcpSocket *_socket);
     void setLogPath(const QString &_path);
 
@@ -65,12 +67,18 @@ private:
     void receive_TestStart(const QString &_testName);
     void receive_TestFinished(const QString &_testName, const int &_testResult);
 
+    void getMoBySN(const QString &_SN);
+    void insertDb(const QString &_testName);
+    void updateDb(const QString &_testName, const QString &_result, int _testTime);
+
+//    QSqlDatabase db;
     State state = CONNECTED;
     TestTime testTime = ZERO_TIME;
-    int toolingNumber;
+    QString toolingSN;// 機台序號
+    int toolingNumber;// 機台位置編號
     QTimer clockTimer;
     QTime clockTime, testStartTime;
-    QString SN, MAC;
+    QString SN, MAC, MO, PN;
     QString logPath;
     QStringList testItemList;
     QMessageBox messageBox;

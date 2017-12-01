@@ -33,18 +33,21 @@
     <property name="bottomMargin">
      <number>9</number>
     </property>
-    <property name="horizontalSpacing">
-     <number>3</number>
-    </property>
-    <property name="verticalSpacing">
-     <number>4</number>
+    <property name="spacing">
+     <number>9</number>
     </property>
     <item row="3" column="1">
      <widget class="QPushButton" name="Button_Stop">
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>40</height>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
        </size>
       </property>
       <property name="statusTip">
@@ -57,10 +60,22 @@
     </item>
     <item row="3" column="2">
      <widget class="QPushButton" name="Button_Quit">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>40</height>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
        </size>
       </property>
       <property name="statusTip">
@@ -76,7 +91,13 @@
       <property name="minimumSize">
        <size>
         <width>0</width>
-        <height>40</height>
+        <height>0</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>200</width>
+        <height>16777215</height>
        </size>
       </property>
       <property name="statusTip">
@@ -95,10 +116,16 @@
     </item>
     <item row="1" column="0" colspan="3">
      <widget class="QScrollArea" name="scrollArea">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <property name="minimumSize">
        <size>
-        <width>800</width>
-        <height>320</height>
+        <width>0</width>
+        <height>350</height>
        </size>
       </property>
       <property name="widgetResizable">
@@ -109,8 +136,8 @@
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>798</width>
-         <height>318</height>
+         <width>706</width>
+         <height>348</height>
         </rect>
        </property>
       </widget>
@@ -121,7 +148,31 @@
       <property name="title">
        <string>Task</string>
       </property>
+      <property name="alignment">
+       <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
       <layout class="QGridLayout" name="gridLayout_2">
+       <property name="leftMargin">
+        <number>20</number>
+       </property>
+       <property name="topMargin">
+        <number>20</number>
+       </property>
+       <property name="rightMargin">
+        <number>20</number>
+       </property>
+       <property name="bottomMargin">
+        <number>20</number>
+       </property>
+       <property name="horizontalSpacing">
+        <number>30</number>
+       </property>
+       <property name="verticalSpacing">
+        <number>9</number>
+       </property>
        <item row="0" column="1">
         <widget class="QLabel" name="label_2">
          <property name="text">
@@ -143,10 +194,22 @@
        </item>
        <item row="1" column="0">
         <widget class="QTableWidget" name="tableWidget_Waiting">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>302</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="font">
@@ -183,10 +246,22 @@
        </item>
        <item row="1" column="1">
         <widget class="QTableWidget" name="tableWidget_InAction">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>302</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="statusTip">
@@ -211,10 +286,22 @@
        </item>
        <item row="1" column="2">
         <widget class="QTableWidget" name="tableWidget_Done">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>200</height>
+           <height>130</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>302</width>
+           <height>16777215</height>
           </size>
          </property>
          <property name="statusTip">

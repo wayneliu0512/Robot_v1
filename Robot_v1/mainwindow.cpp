@@ -25,7 +25,6 @@ QList<Task*> MainWindow::inActionList;
 QList<Task*> MainWindow::doneList;
 MainWindow::SystemState MainWindow::systemState = MainWindow::STOP;
 MainWindow::SystemAction MainWindow::systemAction = MainWindow::WAITING;
-
 int MainWindow::toolingQuantity;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -48,13 +47,11 @@ MainWindow::MainWindow(QWidget *parent) :
     initialTaskManager();
 
     serverOnline();
-
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
@@ -258,16 +255,16 @@ void MainWindow::initialToolings()
     int n = 0;
     for(int i = 0; i < toolingQuantity; i++)
     {
-        tooling.append(new Tooling);
+        tooling.append(new Tooling(this));
         tooling.at(i)->setToolingNumber(i+1);
         tooling.at(i)->setLogPath(toolingLogPath);
         connect(tooling.at(i), SIGNAL(addTask()), this, SLOT(updateWaitingTable()));
         connect(tooling.at(i), SIGNAL(excuteTaskByRobot(Task)), ui->robot, SLOT(excuteTask(Task)));
 
-        if(i%6 == 0)
+        if(i%3 == 0)
              n++;
 
-        toolingGridLayout->addWidget(tooling.at(i), n, i%6, 1, 1);
+        toolingGridLayout->addWidget(tooling.at(i), n, i%3, 1, 1);
     }
     ui->scrollAreaWidgetContents->setLayout(toolingGridLayout);
 
@@ -541,6 +538,11 @@ void MainWindow::on_Button_Start_clicked()
 
     ui->robot->setBase(dynamicSetting->nowOffsetList);
     ui->robot->updateBase();
+
+    for(int i = 0; i < toolingQuantity; ++i)
+    {
+        tooling.at(i)->setToolingSN(dynamicSetting->nowOffsetList->at(i).SN);
+    }
 
     QMessageBox::warning(this, "Warning",
                          "Please make sure keep personnel clearance and free of obstacle!"

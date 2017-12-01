@@ -7,6 +7,11 @@
 #include <QTimer>
 #include <QTime>
 #include <QFile>
+#include <QNetworkAccessManager>
+#include <QNetworkReply>
+#include <QXmlStreamReader>
+#include <QSqlError>
+#include <QSqlQuery>
 
 Tooling::Tooling(QWidget *parent) :
     QWidget(parent),
@@ -34,6 +39,7 @@ Tooling::Tooling(QWidget *parent) :
 
     messageBox.setIcon(QMessageBox::Critical);
     messageBox.setWindowTitle("Error");
+
 }
 
 Tooling::~Tooling()
@@ -69,6 +75,11 @@ void Tooling::setToolingNumber(int _number)
     ui->groupBox->setTitle("Tooling" + QString::number(_number));
 }
 
+void Tooling::setToolingSN(const QString _toolingSN)
+{
+    toolingSN = _toolingSN;
+}
+
 void Tooling::setSocket(QTcpSocket *_socket)
 {
     if(!communication->setSocket(_socket))
@@ -84,7 +95,7 @@ void Tooling::setLogPath(const QString &_path)
 
 void Tooling::receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult)
 {
-    if(_testName == "final")
+    if(_testName == "Final")
     {
         receive_AllTestFinished(_testResult);
     }else
@@ -100,21 +111,6 @@ void Tooling::receiveMessage(const QString &_testName, const int &_testStage, co
             break;
         }
     }
-//    qDebug() << "Tooling" << QString::number(toolingNumber) << " receive message: " << _message;
-//    testListUpdate(_message);
-//    if(_message == "test pass")
-//    {
-//        updateState(TEST_FINISHED_PASS);
-//    }else if(_message == "test fail")
-//    {
-//        updateState(TEST_FINISHED_FAIL);
-//    }else if(_message == "AutoMES ERROR")
-//    {
-//        updateState(TEST_FINISHED_FAIL);
-//    }else
-//    {
-//        qDebug() << "Tooling"<< QString::number(toolingNumber) << " exception message: " << _message;
-//    }
 }
 
 void Tooling::receive_AllTestFinished(const int &_testResult)
@@ -141,26 +137,73 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
 void Tooling::receive_TestStart(const QString &_testName)
 {
     testStartTime = clockTime;
-    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing");
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing" << testStartTime.toString());
+
     ui->treeWidget->insertTopLevelItem(0, item);
+    insertDb(_testName);
+}
+
+void Tooling::insertDb(const QString &_testName)
+{
+    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn) "
+                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120))")
+                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName);
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+    QString dsn("DRIVER={SQL Server};SERVER=172.16.4.134;UID=sa;PWD=a123456;DATABASE=SmartFactory");
+    db.setDatabaseName(dsn);
+
+    if(!db.open())
+        qCritical() << "Db open fail: " << db.lastError().text();
+
+    QSqlQuery sq(db);
+
+    if(!sq.exec(cmdInsert))
+        qCritical() << "Db insert error.";
+
+    db.close();
 }
 
 void Tooling::receive_TestFinished(const QString &_testName, const int &_testResult)
 {
+    int testTime;
     QString result;
     if(_testResult == 1)
-        result = "pass";
+        result = "Pass";
     else
-        result = "fail";
+        result = "Fail";
 
     for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
     {
         if(ui->treeWidget->topLevelItem(i)->text(0) == _testName)
         {
+            testTime = QTime::fromString(ui->treeWidget->topLevelItem(i)->text(2)).secsTo(clockTime);
             ui->treeWidget->topLevelItem(i)->setText(1, result);
-            ui->treeWidget->topLevelItem(i)->setText(2, QString::number(testStartTime.secsTo(clockTime)));
+            ui->treeWidget->topLevelItem(i)
+                    ->setText(3, QString::number(testTime));
+            updateDb(_testName, result, testTime);
         }
     }
+}
+
+void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
+{
+    QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
+                                .arg(_result).arg(_testTime).arg(SN).arg(_testName);
+
+    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+    QString dsn("DRIVER={SQL Server};SERVER=172.16.4.134;UID=sa;PWD=a123456;DATABASE=SmartFactory");
+    db.setDatabaseName(dsn);
+
+    if(!db.open())
+        qCritical() << "Db open fail: " << db.lastError().text();
+
+    QSqlQuery sq(db);
+
+    if(!sq.exec(cmdUpdate))
+        qCritical() << "Db update error.";
+
+    db.close();
 }
 
 void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
@@ -169,6 +212,63 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
         return;
     SN = _SN;
     ui->label_SN->setText(SN);
+
+    getMoBySN(SN);
+}
+
+void Tooling::getMoBySN(const QString &_SN)
+{
+    QString getUrl("http://203.70.94.183/MESWebService_3.5/MESWebService_3.5/MESWebService.asmx/GetADLINKSNInfo?");
+
+    QNetworkAccessManager manager;
+    QNetworkReply *reply;
+
+    QEventLoop event;
+    connect(&manager, SIGNAL(finished(QNetworkReply*)),
+            &event, SLOT(quit()));
+
+    reply = manager.get(QNetworkRequest(QUrl(getUrl + "SerialNo=" + _SN + "&MC=TPMC")));
+
+    event.exec();
+
+    disconnect(&manager, SIGNAL(finished(QNetworkReply*)),
+               &event, SLOT(quit()));
+
+    if(reply->error())
+    {
+        qCritical() << "Tooling::getMoBySN() / Db reply error.";
+        MO = "N/A";
+        PN = "N/A";
+        return;
+    }
+
+    QByteArray answer = reply->readAll();
+
+    QXmlStreamReader xmlReader(answer);
+
+    while (!xmlReader.atEnd()) {
+        xmlReader.readNext();
+        if(xmlReader.isStartElement())
+        {
+            if(xmlReader.name().toString() == "string")
+            {
+                QString readStr = xmlReader.readElementText();
+                qDebug() << "Get from webService << " << readStr;
+                QStringList strList = readStr.split("ΓΓ");
+
+                MO = strList.at(1);
+                PN = strList.at(2);
+                return;
+            }
+        }
+    }
+    if(xmlReader.hasError())
+    {
+        qCritical() << "Tooling::getMoBySN() / " << xmlReader.errorString();
+    }
+    MO = "N/A";
+    PN = "N/A";
+    return;
 }
 
 void Tooling::receiveMAC(const QString &_MAC, const int &_toolingNumber)
@@ -352,7 +452,7 @@ void Tooling::initialTestList()
     for(int i = ui->treeWidget->topLevelItemCount()-1; i >= 0; i--)
         out << "Test item:" << ui->treeWidget->topLevelItem(i)->text(0)
             << "\tResult:" << ui->treeWidget->topLevelItem(i)->text(1)
-            << "\tSpend time:" << ui->treeWidget->topLevelItem(i)->text(2) << "(sec)" << endl;
+            << "\tSpend time:" << ui->treeWidget->topLevelItem(i)->text(3) << "(sec)" << endl;
 
     ui->treeWidget->clear();
 }

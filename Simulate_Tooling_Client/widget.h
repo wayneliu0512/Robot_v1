@@ -39,6 +39,8 @@ private slots:
 
     void on_pushButton_Clear_clicked();
 
+    void on_comboBox_TestStage_activated(const QString &arg1);
+
 private:
     Ui::Widget *ui;
 
@@ -46,7 +48,11 @@ private:
 
     QJsonValue ID_value;
 
+    int testResult = 0, testStage = 0;
+
     void DONE_Respond();
+
+    void sendJson(const QString &_testName);
 };
 
 #endif // WIDGET_H

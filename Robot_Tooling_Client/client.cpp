@@ -50,6 +50,7 @@ void Client::readIniFile()
     port = setting.value("Option/Port").toInt();
     com = setting.value("Option/COMPortName").toString();
     toolingNum = setting.value("Option/Tooling").toString();
+    //超過這個秒數, 則認定此測項卡住FAIL
     timerSecond_checkOnline = setting.value("Option/Timer_check(sec)").toInt();
 }
 
@@ -87,6 +88,8 @@ void Client::connected()
 void Client::disconnected()
 {
     qDebug() << "Disconnected!(Socket)";
+    timerCounter = 0;
+    timer->stop();
     timerForReConnect->start();
 }
 
@@ -138,49 +141,67 @@ void Client::readyRead_serial()
 
     qDebug() << "dataBuffer << " + dataBuffer;
 
-    QRegularExpression reg("[@]{1}(?<text>\\w*)[;]{1}");
+//    Example:
+//    1.單純接收開始測試項目:     @SATA;
+//    2.接收測試完成的項目:      @SATA/P;
+//    3.接收全部測試完成的結果:   @PASSF;
+    QRegularExpression reg("[@]{1}(?<text>\\w*|\\w*[/][FP])[;]{1}");
     QRegularExpressionMatch match = reg.match(dataBuffer);
 
-    //DOS Boot
+    QString captureStr = match.captured("text");
+
     if(match.hasMatch())
     {
-        QString captureStr = match.captured("text");
-        qDebug() << "dataConfirm << " + captureStr;
-        if(captureStr == "PASSF")
+//        單一測項測試完成時
+        if(captureStr.contains('/'))
         {
-            timer->stop();
+            qDebug() << "dataConfirm << " + captureStr;
 
-            testName = "final";
-            if(controlWAutoMESProgram_PASS())
+            testName = captureStr.split('/').at(0);
+            QString result = captureStr.split('/').at(1);
+
+            if(result == "P")
+            {
+                timerCounter = 0;
                 sendJson(testName, 1, 1);
-            else
+            }else
+            {
+                timerCounter = 0;
                 sendJson(testName, 1, 0);
-        }else if(captureStr == "FAILF")
-        {
-            timer->stop();
+            }
 
-            testName = "final";
-            sendJson(testName, 1, 0);
-        }else if(captureStr == "PASS")
-        {
-            timerCounter = 0;
-
-            sendJson(testName, 1, 0);
-        }else if(captureStr == "FAIL")
-        {
-            timerCounter = 0;
-
-            sendJson(testName, 1, 0);
         }else
         {
-            timerCounter = 0;
+            qDebug() << "dataConfirm << " + captureStr;
+//            接收全部測試完成的結果
+            if(captureStr == "PASSF")
+            {
+                timer->stop();
 
-            testName = captureStr;
-            sendJson(testName, 0, 0);
+                testName = "final";
+                if(controlWAutoMESProgram_PASS())
+                    sendJson(testName, 1, 1);
+                else
+                    sendJson(testName, 1, 0);
+            }else if(captureStr == "FAILF")
+            {
+                timer->stop();
+
+                testName = "final";
+                sendJson(testName, 1, 0);
+            }
+//            接收開始測試項目
+            else
+            {
+                timerCounter = 0;
+
+                testName = captureStr;
+                sendJson(testName, 0, 0);
+            }
         }
         dataBuffer.clear();
     }
-    //SN request
+    //SN request 跟Justin程式做溝通
     else if(dataBuffer.contains(0xBC))
     {
         serial->write("B");
@@ -188,7 +209,7 @@ void Client::readyRead_serial()
 
         dataBuffer.clear();
     }
-    //SN request
+    //SN request 跟Justin程式做溝通
     else if(dataBuffer.contains(0x07))
     {
         QString sendData = SN + "1" + MAC1 + "                          "; // 26 spaces for Jastin.
@@ -226,7 +247,7 @@ void Client::timeoutForBoot()
     timer->stop();
     timerCounter = 0;
 }
-
+//PASS過後藉由AutoMES 過站
 bool Client::controlWAutoMESProgram_PASS()
 {
     WCHAR catcher[10000] = {0};
@@ -278,7 +299,7 @@ bool Client::controlWAutoMESProgram_PASS()
         return false;
     }
 }
-
+//FAIL過後藉由AutoMES 過站
 void Client::controlWAutoMESProgram_FAIL()
 {
     WCHAR catcher[10000] = {0};

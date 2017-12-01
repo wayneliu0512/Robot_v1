@@ -31,6 +31,40 @@
      <item>
       <widget class="QLineEdit" name="lineEdit_IP"/>
      </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_Tooling">
+       <item>
+        <property name="text">
+         <string>tooling1</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>tooling2</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>tooling3</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>tooling4</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>tooling5</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>tooling6</string>
+        </property>
+       </item>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="3" column="0">
@@ -44,6 +78,25 @@
      </item>
      <item>
       <widget class="QLineEdit" name="lineEdit"/>
+     </item>
+     <item>
+      <widget class="QComboBox" name="comboBox_TestStage">
+       <item>
+        <property name="text">
+         <string>testing</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>pass</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>fail</string>
+        </property>
+       </item>
+      </widget>
      </item>
     </layout>
    </item>

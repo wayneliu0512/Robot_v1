@@ -63,42 +63,53 @@ void Client::readyRead_serial()
 
     qDebug() << "dataBuffer << " + dataBuffer;
 
-    QRegularExpression reg("[@]{1}(?<text>\\w*)[;]{1}");
+    QRegularExpression reg("[@]{1}(?<text>\\w*|\\w*[/][FP])[;]{1}");
     QRegularExpressionMatch match = reg.match(dataBuffer);
 
-    //DOS Boot
+    QString captureStr = match.captured("text");
+
     if(match.hasMatch())
     {
-        QString captureStr = match.captured("text");
-        qDebug() << "dataConfirm << " + captureStr;
-        if(captureStr == "PASSF")
+        if(captureStr.contains('/'))
         {
-            timer->stop();
+            qDebug() << "dataConfirm << " + captureStr;
 
-            testName = "final";
-            sendJson(testName, 1, 1);
-        }else if(captureStr == "FAILF")
-        {
-            timer->stop();
+            testName = captureStr.split('/').at(0);
+            QString result = captureStr.split('/').at(1);
 
-            testName = "final";
-            sendJson(testName, 1, 0);
-        }else if(captureStr == "PASS")
-        {
-            timerCounter = 0;
+            if(result == "P")
+            {
+                timerCounter = 0;
+                sendJson(testName, 1, 1);
+            }else
+            {
+                timerCounter = 0;
+                sendJson(testName, 1, 0);
+            }
 
-            sendJson(testName, 1, 0);
-        }else if(captureStr == "FAIL")
-        {
-            timerCounter = 0;
-
-            sendJson(testName, 1, 0);
         }else
         {
-            timerCounter = 0;
+            qDebug() << "dataConfirm << " + captureStr;
+            if(captureStr == "PASSF")
+            {
+                timer->stop();
 
-            testName = captureStr;
-            sendJson(testName, 0, 0);
+                testName = "final";
+                sendJson(testName, 1, 0);
+            }else if(captureStr == "FAILF")
+            {
+                timer->stop();
+
+                testName = "final";
+                sendJson(testName, 1, 0);
+            }
+            else
+            {
+                timerCounter = 0;
+
+                testName = captureStr;
+                sendJson(testName, 0, 0);
+            }
         }
         dataBuffer.clear();
     }

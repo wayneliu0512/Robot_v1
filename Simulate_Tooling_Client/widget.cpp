@@ -13,14 +13,6 @@ Widget::Widget(QWidget *parent) :
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead_socket()));
 
     connect(this, SIGNAL(output(QString)), ui->textBrowser, SLOT(append(QString)));
-
-    emit output("Connecting to host: IP:172.16.4.73    Port:1234");
-
-    socket->connectToHost("172.16.4.73", 1234);//"192.168.0.103" , "172.16.4.101", "10.211.55.3"
-    if(!socket->waitForConnected(1000))
-    {
-        emit output("Connect fail.");
-    }
 }
 
 Widget::~Widget()
@@ -50,8 +42,21 @@ void Widget::readyRead_socket()
 void Widget::on_pushButton_Send_clicked()
 {
     QString str(ui->lineEdit->text());
-    socket->write(str.toLatin1());
-    emit output("Send >> " + str);
+    sendJson(str);
+}
+
+void Widget::sendJson(const QString &_testName)
+{
+    QJsonObject jsonObj;
+    jsonObj.insert("TestName", _testName);
+    jsonObj.insert("TestStage", testStage);
+    jsonObj.insert("TestResult", testResult);
+
+    QJsonDocument jsonDoc(jsonObj);
+
+    socket->write(jsonDoc.toJson());
+
+    emit output("SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson()));
 }
 
 void Widget::on_pushButton_Connect_clicked()
@@ -66,7 +71,10 @@ void Widget::on_pushButton_Connect_clicked()
     if(!socket->waitForConnected(1000))
     {
         emit output("Connect fail.");
+        return;
     }
+
+    socket->write(ui->comboBox_Tooling->currentText().toLatin1());
 }
 
 void Widget::on_pushButton_Disconnect_clicked()
@@ -78,4 +86,23 @@ void Widget::on_pushButton_Disconnect_clicked()
 void Widget::on_pushButton_Clear_clicked()
 {
     ui->textBrowser->clear();
+}
+
+void Widget::on_comboBox_TestStage_activated(const QString &arg1)
+{
+    if(arg1 == "testing")
+    {
+        testStage = 0;
+    }else if(arg1 == "pass")
+    {
+        testStage = 1;
+        testResult = 1;
+    }else if(arg1 == "fail")
+    {
+        testStage = 1;
+        testResult = 0;
+    }else
+    {
+        emit output("Error: ComboBox exception.");
+    }
 }
