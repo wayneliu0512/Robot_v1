@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>553</width>
+    <width>520</width>
     <height>362</height>
    </rect>
   </property>
@@ -182,7 +182,7 @@
            <widget class="QLabel" name="label">
             <property name="maximumSize">
              <size>
-              <width>40</width>
+              <width>50</width>
               <height>16777215</height>
              </size>
             </property>
@@ -198,6 +198,12 @@
           </item>
           <item>
            <widget class="QLabel" name="label_SN">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <pointsize>12</pointsize>
@@ -216,7 +222,7 @@
            <widget class="QLabel" name="label_3">
             <property name="maximumSize">
              <size>
-              <width>40</width>
+              <width>50</width>
               <height>16777215</height>
              </size>
             </property>
@@ -232,6 +238,12 @@
           </item>
           <item>
            <widget class="QLabel" name="label_MAC">
+            <property name="minimumSize">
+             <size>
+              <width>150</width>
+              <height>0</height>
+             </size>
+            </property>
             <property name="font">
              <font>
               <pointsize>12</pointsize>
