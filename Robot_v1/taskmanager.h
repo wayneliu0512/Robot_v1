@@ -16,11 +16,11 @@ public:
 protected:
     void run();
 signals:
-    void excuteRobotTask(const Task &_task);
-    void excuteToolingTask(const Task &_task);
-    void excuteCcdTask(const Task &_task);
+    void excuteRobotTask(const Task &_task);    //派發Robot任務
+    void excuteToolingTask(const Task &_task);  //派發Tooling任務
+    void excuteCcdTask(const Task &_task);      //派發Ccd任務
 public slots:
-    void systemActionFinished();
+    void systemActionFinished();                //當一個動作完成時, 更新系統狀態
 };
 
 #endif // TASKMANAGER_H

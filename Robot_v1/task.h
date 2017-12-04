@@ -34,7 +34,7 @@ public:
 //    刪除接下來連結的任務
     void deleteNextAll();
 
-    QString ID;
+    QString ID;     // 每個任務都會生成一個獨一無二的ID, 由此ID來確保ACK機制任務是正確的
     Command command;
     Device device;
     Task *nextTask;

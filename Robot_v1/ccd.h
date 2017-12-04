@@ -3,7 +3,9 @@
 
 #include <QWidget>
 
-/*Barcode Scanner*/
+/*Barcode Scanner：
+  主要與樹莓派做溝通, 掃SN, MAC
+*/
 
 class QTcpSocket;
 class Communication;
