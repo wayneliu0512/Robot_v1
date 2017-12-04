@@ -19,6 +19,8 @@ public:
     QVector<Base> *offsetList;
 //    現在Base座標系的列表, 並更新至offsetList
     QVector<Base> *nowOffsetList;
+//    對應靜電盒位置列表
+    QVector<int> *electrostaticBoxList;
 //    更新Base
     void updateBaseSetting();
 //    回到讀取Base座標系的列表

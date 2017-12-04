@@ -9,6 +9,8 @@ DynamicSetting::DynamicSetting(QObject *parent, const int &_toolingQuantity) :
 {
     offsetList = new QVector<Base>(toolingQuantity);
     nowOffsetList = new QVector<Base>(toolingQuantity);
+    electrostaticBoxList = new QVector<int>(toolingQuantity);
+
     readBaseSetting();
 }
 

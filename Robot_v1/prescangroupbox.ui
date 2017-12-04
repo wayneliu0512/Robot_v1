@@ -32,6 +32,13 @@
         </property>
        </widget>
       </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_2">
+        <property name="text">
+         <string>Base</string>
+        </property>
+       </widget>
+      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="lineEdit_Tooling">
         <property name="minimumSize">
@@ -42,13 +49,6 @@
         </property>
         <property name="whatsThis">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;機箱序號:&lt;/p&gt;&lt;p&gt;FX-[產品型號]-[1~3位數字,流水號]&lt;/p&gt;&lt;p&gt;PS: 此序號會跟Base_Setting.ini裡比對,找不到會錯誤&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Base</string>
         </property>
        </widget>
       </item>
@@ -104,6 +104,16 @@
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;模組序號:&lt;/p&gt;&lt;p&gt;FX-[產品型號+M]-[1~3位數字,流水號]&lt;/p&gt;&lt;p&gt;PS: 此序號會用產品型號跟機箱產品型號作比對,不相同會錯誤&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
        </widget>
+      </item>
+      <item row="4" column="0">
+       <widget class="QLabel" name="label_5">
+        <property name="text">
+         <string>Electrostatic box</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QLineEdit" name="lineEdit_ElecBox"/>
       </item>
      </layout>
     </widget>

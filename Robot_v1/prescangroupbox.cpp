@@ -49,6 +49,12 @@ void PreScanGroupBox::keyInFinished()
         return;
     }
 
+    if(ui->lineEdit_ElecBox->text().isEmpty())
+    {
+        ui->lineEdit_ElecBox->setFocus();
+        return;
+    }
+
     Base offset;
 
     //檢查ini檔裡是否有此序號
@@ -201,6 +207,23 @@ void PreScanGroupBox::on_lineEdit_Module_returnPressed()
     keyInFinished();
 }
 
+void PreScanGroupBox::on_lineEdit_ElecBox_returnPressed()
+{
+    ui->lineEdit_ElecBox->setText(ui->lineEdit_ElecBox->text().toUpper());
+
+    QRegExp rx("^LOAD-[0-9]{3,3}$");
+
+    if(!rx.exactMatch(ui->lineEdit_Module->text()))
+    {
+        messageBox.setText("Electrostatic box syntax error!");
+        messageBox.show();
+        qDebug() << "PreScanDialog: Electrostatic box syntax error!";
+        ui->lineEdit_ElecBox->clear();
+        return;
+    }
+    keyInFinished();
+}
+
 void PreScanGroupBox::StartEdit()
 {
     ui->lineEdit_Tooling->setFocus();
@@ -232,3 +255,5 @@ void PreScanGroupBox::ReKeyLineEdit(const LineEdit &_lineEdit)
         break;
     }
 }
+
+

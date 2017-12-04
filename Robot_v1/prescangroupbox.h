@@ -46,6 +46,8 @@ private slots:
 
     void on_lineEdit_Module_returnPressed();
 
+    void on_lineEdit_ElecBox_returnPressed();
+
 private:
     Ui::PreScanGroupBox *ui;
 
