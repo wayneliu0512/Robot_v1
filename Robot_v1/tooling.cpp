@@ -18,6 +18,7 @@ Tooling::Tooling(QWidget *parent) :
     ui(new Ui::Tooling)
 {
     ui->setupUi(this);
+    dsn = QString("DRIVER={SQL Server};SERVER=tw04436p01;UID=sa;PWD=a123456;DATABASE=SmartFactory");
 
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
@@ -150,7 +151,6 @@ void Tooling::insertDb(const QString &_testName)
                                 .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName);
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    QString dsn("DRIVER={SQL Server};SERVER=172.16.4.134;UID=sa;PWD=a123456;DATABASE=SmartFactory");
     db.setDatabaseName(dsn);
 
     if(!db.open())
@@ -192,7 +192,6 @@ void Tooling::updateDb(const QString &_testName, const QString &_result, int _te
                                 .arg(_result).arg(_testTime).arg(SN).arg(_testName);
 
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    QString dsn("DRIVER={SQL Server};SERVER=172.16.4.134;UID=sa;PWD=a123456;DATABASE=SmartFactory");
     db.setDatabaseName(dsn);
 
     if(!db.open())

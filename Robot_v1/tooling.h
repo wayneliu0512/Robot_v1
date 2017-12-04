@@ -82,8 +82,9 @@ private:
 
     State state = CONNECTED;        //機台狀態
     TestTime testTime = ZERO_TIME;  //機台測試次數
-    QString toolingSN;              // 機台序號
-    int toolingNumber;              // 機台位置編號
+    QString toolingSN;              //機台序號
+    int toolingNumber;              //機台位置編號
+    QString dsn;                    //DB 使用的Dsn碼
     QTimer clockTimer;
     QTime clockTime, testStartTime;
     QString SN, MAC, MO, PN;
