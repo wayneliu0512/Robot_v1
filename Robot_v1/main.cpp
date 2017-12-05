@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 //    安裝MessageHandler可以輸出QtDebug訊息
-    qInstallMessageHandler(myMessageHandler);
+//    qInstallMessageHandler(myMessageHandler);
 
     MainWindow w;
     w.show();

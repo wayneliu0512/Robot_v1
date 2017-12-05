@@ -47,6 +47,8 @@ MainWindow::MainWindow(QWidget *parent) :
     initialTaskManager();
 
     serverOnline();
+
+    preScanDialog->exec();
 }
 
 MainWindow::~MainWindow()
@@ -520,14 +522,14 @@ void MainWindow::on_Button_Start_clicked()
                                                        QMessageBox::Cancel, QMessageBox::Ok))
             {
                 qDebug() << "Use old Base_setting";
-                dynamicSetting->backToOriginalOffset();
+                dynamicSetting->backToOriginalSetting();
                 if(toolingQuantity >= 3)
                     dynamicSetting->adjustTooling3Offset();
                 break;
             }
         }else if(result == 1)
         {
-            dynamicSetting->updateBaseSetting();
+            dynamicSetting->updateSetting();
             if(toolingQuantity >= 3)
                 dynamicSetting->adjustTooling3Offset();
             break;

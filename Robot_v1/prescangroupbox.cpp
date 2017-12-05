@@ -110,8 +110,11 @@ void PreScanGroupBox::keyInFinished()
             return;
         }
     }
+
+    int nowBaseNum = ui->lineEdit_Base->text().section('-',2,2).toInt();
+
     //檢查此base位置是否已經有擺放東西
-    if(!setting->nowOffsetList->at(ui->lineEdit_Base->text().section('-',2,2).toInt()-1).ID.isEmpty())
+    if(!setting->nowOffsetList->at(nowBaseNum-1).ID.isEmpty())
     {
         messageBox.setText("Base conflict.");
         messageBox.show();
@@ -119,9 +122,13 @@ void PreScanGroupBox::keyInFinished()
         ui->lineEdit_Base->clear();
         ui->lineEdit_Base->setFocus();
         return;
-    }
+    }   
+
     //將檢查pass的offset加入新的offsetList
-    setting->nowOffsetList->replace(ui->lineEdit_Base->text().section('-',2,2).toInt()-1, offset);
+    setting->nowOffsetList->replace(nowBaseNum-1, offset);
+
+    //將讀取到的入料區對應位置存入
+    setting->nowElectorstaticBoxList->replace(nowBaseNum-1, ui->lineEdit_ElecBox->text().section('-',1,1).toInt());
 
     //if 判斷檢查通過
     ui->groupBox->setEnabled(false);
@@ -211,9 +218,9 @@ void PreScanGroupBox::on_lineEdit_ElecBox_returnPressed()
 {
     ui->lineEdit_ElecBox->setText(ui->lineEdit_ElecBox->text().toUpper());
 
-    QRegExp rx("^LOAD-[0-9]{3,3}$");
+    QRegExp rx("^LOAD-00[0-2]$");
 
-    if(!rx.exactMatch(ui->lineEdit_Module->text()))
+    if(!rx.exactMatch(ui->lineEdit_ElecBox->text()))
     {
         messageBox.setText("Electrostatic box syntax error!");
         messageBox.show();

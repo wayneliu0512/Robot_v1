@@ -6,10 +6,11 @@
 #include <QDebug>
 DynamicSetting::DynamicSetting(QObject *parent, const int &_toolingQuantity) :
     QObject(parent), toolingQuantity(_toolingQuantity)
-{
+{    
     offsetList = new QVector<Base>(toolingQuantity);
     nowOffsetList = new QVector<Base>(toolingQuantity);
     electrostaticBoxList = new QVector<int>(toolingQuantity);
+    nowElectorstaticBoxList = new QVector<int>(toolingQuantity);
 
     readBaseSetting();
 }
@@ -18,17 +19,27 @@ DynamicSetting::~DynamicSetting()
 {
     delete offsetList;
     delete nowOffsetList;
+    delete electrostaticBoxList;
+    delete nowElectorstaticBoxList;
 }
 
 void DynamicSetting::readBaseSetting()
 {
     offsetList->clear();
     offsetList->resize(toolingQuantity);
+    electrostaticBoxList->clear();
+    electrostaticBoxList->resize(toolingQuantity);
 
     QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);
 
-    QList<int> matchBase;
+//    讀取Base對應的入料區位置
+    for(int i = 0; i < toolingQuantity; ++i)
+    {
+        electrostaticBoxList->replace(i, baseIni.value("ElectrostaticBoxMatch/Base" + QString::number(i+1)).toInt());
+    }
 
+//    讀取Base對應的機箱Offset
+    QList<int> matchBase;
     for(int i = 0; i < toolingQuantity; i++)
     {
         matchBase.append(baseIni.value("BaseMatch/Base" + QString::number(i+1)).toInt());
@@ -84,9 +95,10 @@ void DynamicSetting::readModuleSetting()
     QSettings moduleSetting("Module_Setting.ini", QSettings::IniFormat);
 }
 
-void DynamicSetting::backToOriginalOffset()
+void DynamicSetting::backToOriginalSetting()
 {
     *nowOffsetList = *offsetList;
+    *nowElectorstaticBoxList = *electrostaticBoxList;
 }
 
 void DynamicSetting::adjustTooling3Offset()
@@ -97,13 +109,14 @@ void DynamicSetting::adjustTooling3Offset()
     nowOffsetList->replace(2, base);
 }
 
-void DynamicSetting::updateBaseSetting()
+void DynamicSetting::updateSetting()
 {
     QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);
 
     for(int i = 0; i < toolingQuantity; i++)
     {
         baseIni.setValue("BaseMatch/Base" + QString::number(i+1) , nowOffsetList->at(i).ID);
+        baseIni.setValue("Electrostatic/Base" + QString::number(i+1), nowElectorstaticBoxList->at(i));
     }
 
     readBaseSetting();

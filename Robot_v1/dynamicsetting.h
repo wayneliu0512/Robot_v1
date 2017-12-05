@@ -19,12 +19,14 @@ public:
     QVector<Base> *offsetList;
 //    現在Base座標系的列表, 並更新至offsetList
     QVector<Base> *nowOffsetList;
-//    對應靜電盒位置列表
+//    讀取對應入料區位置列表
     QVector<int> *electrostaticBoxList;
-//    更新Base
-    void updateBaseSetting();
-//    回到讀取Base座標系的列表
-    void backToOriginalOffset();
+//    現在對應入料區位置列表
+    QVector<int> *nowElectorstaticBoxList;
+//    更新Base,  更新對應入料區位置列表
+    void updateSetting();
+//    回到讀取Base座標系的列表, 回到讀取的對應入料區列表
+    void backToOriginalSetting();
 //    調整機箱3的base 參數
     void adjustTooling3Offset();
 
