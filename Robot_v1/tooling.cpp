@@ -76,22 +76,12 @@ void Tooling::setToolingNumber(int _number)
     ui->groupBox->setTitle("Tooling" + QString::number(_number));
 }
 
-void Tooling::setToolingSN(const QString _toolingSN)
-{
-    toolingSN = _toolingSN;
-}
-
 void Tooling::setSocket(QTcpSocket *_socket)
 {
     if(!communication->setSocket(_socket))
         return;
 
     updateState(IDLE);
-}
-
-void Tooling::setLogPath(const QString &_path)
-{
-    logPath = _path;
 }
 
 void Tooling::receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult)

@@ -21,7 +21,8 @@ public:
     ~Robot();
 
     void setPortIP(int _port, const QString &_IP);
-    void setBase(const QVector<Base> *_baseList);//設置各機台Base 列表
+    void setBase(const QVector<Base> *_baseList){ baseList = _baseList; }               //設置各機台Base 列表
+    void setElecBoxList(const QVector<int> *_elecBoxList){ elecBoxList = _elecBoxList; }//設置各機台入料區
     void connectToRobot();
     void updateBase(); //派發更新Base任務
 
@@ -45,8 +46,12 @@ private:
 
     void updateState(State _state);//更新手臂狀態
 
+    QString transFromIndex(int _deviceNum);//將from mode轉換成手臂的from 參數
+    QString transToIndex(int _deviceNum);  //將from mode轉換成手臂的To參數
+
     QTimer *timer;
     const QVector<Base> *baseList;
+    const QVector<int> *elecBoxList;
 };
 
 #endif // ROBOT_H

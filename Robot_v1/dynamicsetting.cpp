@@ -10,7 +10,7 @@ DynamicSetting::DynamicSetting(QObject *parent, const int &_toolingQuantity) :
     offsetList = new QVector<Base>(toolingQuantity);
     nowOffsetList = new QVector<Base>(toolingQuantity);
     electrostaticBoxList = new QVector<int>(toolingQuantity);
-    nowElectorstaticBoxList = new QVector<int>(toolingQuantity);
+    nowElectrostaticBoxList = new QVector<int>(toolingQuantity);
 
     readBaseSetting();
 }
@@ -20,7 +20,7 @@ DynamicSetting::~DynamicSetting()
     delete offsetList;
     delete nowOffsetList;
     delete electrostaticBoxList;
-    delete nowElectorstaticBoxList;
+    delete nowElectrostaticBoxList;
 }
 
 void DynamicSetting::readBaseSetting()
@@ -49,7 +49,7 @@ void DynamicSetting::readBaseSetting()
 
     for(int i = 0; i < toolingQuantity; i++)
     {
-        baseIni.beginGroup(baseListIni.at(matchBase.at(i)));
+        baseIni.beginGroup(baseListIni.at(matchBase.at(i)+1));
         QStringList baseKey = baseIni.childKeys();
 
         Base base;
@@ -83,11 +83,10 @@ void DynamicSetting::readBaseSetting()
                 base.width = baseIni.value("Width").toString();
             }
         }
-
         offsetList->replace(i, base);
-
         baseIni.endGroup();
     }
+    classifyElecBoxList();
 }
 
 void DynamicSetting::readModuleSetting()
@@ -98,7 +97,7 @@ void DynamicSetting::readModuleSetting()
 void DynamicSetting::backToOriginalSetting()
 {
     *nowOffsetList = *offsetList;
-    *nowElectorstaticBoxList = *electrostaticBoxList;
+    *nowElectrostaticBoxList = *electrostaticBoxList;
 }
 
 void DynamicSetting::adjustTooling3Offset()
@@ -109,14 +108,30 @@ void DynamicSetting::adjustTooling3Offset()
     nowOffsetList->replace(2, base);
 }
 
-void DynamicSetting::updateSetting()
+void DynamicSetting::classifyElecBoxList()
 {
-    QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);
+    for(int i = 0; i < toolingQuantity; ++i)
+    {
+        if(electrostaticBoxList->at(i) != 1)
+        {
+            qDebug() << "ElecBoxList: two type mode";
+            return;
+        }
+    }
+    for(int i = 0; i < toolingQuantity; ++i)
+    {
+        electrostaticBoxList->replace(i, 3);
+    }
+    qDebug() << "ElecBoxList: one type mode";
+}
 
+void DynamicSetting::updateSetting()
+{    
+    QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);
     for(int i = 0; i < toolingQuantity; i++)
     {
         baseIni.setValue("BaseMatch/Base" + QString::number(i+1) , nowOffsetList->at(i).ID);
-        baseIni.setValue("Electrostatic/Base" + QString::number(i+1), nowElectorstaticBoxList->at(i));
+        baseIni.setValue("ElectrostaticBoxMatch/Base" + QString::number(i+1), nowElectrostaticBoxList->at(i));
     }
 
     readBaseSetting();

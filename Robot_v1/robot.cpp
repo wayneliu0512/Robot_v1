@@ -33,17 +33,11 @@ Robot::Robot(QWidget *parent) :
 Robot::~Robot()
 {
     delete ui;
-
 }
 
 void Robot::setPortIP(int _port, const QString &_IP)
 {
     communication->setPortIP(_port, _IP);
-}
-
-void Robot::setBase(const QVector<Base> *_baseList)
-{
-    baseList = _baseList;
 }
 
 void Robot::updateBase()
@@ -69,9 +63,11 @@ void Robot::excuteTask(const Task &_task)
     {
         updateState(INACTION);
 
+        QString from = transFromIndex(_task.deviceNumber);
+
         QXmlStreamAttributes attributes;
         attributes.append("ID", _task.ID);
-        attributes.append("FROM", "10");
+        attributes.append("FROM", from);
         attributes.append("TO", QString::number(_task.deviceNumber));
 
         communication->sendXML(_task.ID, "ROBOT", "CMD", attributes, "1");
@@ -79,9 +75,11 @@ void Robot::excuteTask(const Task &_task)
     {
         updateState(INACTION);
 
+        QString from = transFromIndex(_task.deviceNumber);
+
         QXmlStreamAttributes attributes;
         attributes.append("ID", _task.ID);
-        attributes.append("FROM", "10");
+        attributes.append("FROM", from);
         attributes.append("TO", "13");
 
         communication->sendXML(_task.ID, "ROBOT", "CMD", attributes, "1");
@@ -138,10 +136,12 @@ void Robot::excuteTask(const Task &_task)
     {
         updateState(INACTION);
 
+        QString to = transToIndex(_task.deviceNumber);
+
         QXmlStreamAttributes attributes;
         attributes.append("ID", _task.ID);
         attributes.append("FROM", QString::number(_task.deviceNumber));
-        attributes.append("TO", "11");
+        attributes.append("TO", to);
         attributes.append("RELOAD", "0");
 
         communication->sendXML(_task.ID, "ROBOT", "CMD", attributes, "1");
@@ -184,6 +184,41 @@ void Robot::excuteTask(const Task &_task)
     {
         QMessageBox::critical(this, "Error", "Robot::excuteTask()\nTask.command exception error.");
         qCritical() << "Error: Robot::excuteTask()  Task.command exception error.";
+    }
+}
+
+//將各機台的入料區轉成手臂接收的CMD/@FROM
+QString Robot::transFromIndex(int _deviceNum)
+{
+    switch ( elecBoxList->at(_deviceNum - 1) ) {
+    case 1:
+        return "10";//LOAD1
+    case 2:
+        return "14";//LOAD2
+    case 3:
+        return "15";//LOAD1 + LOAD2
+    default:
+        QMessageBox::critical(this, "Error", "Robot::transFromIndex()\n From index exception error.");
+        qCritical() << "Error: Robot::transFromIndex()\n From index exception error." << " int :" << _deviceNum;
+
+        return "99";
+    }
+}
+
+//將各機台的入料區轉成手臂接收的CMD/@TO
+QString Robot::transToIndex(int _deviceNum)
+{
+    switch (elecBoxList->at(_deviceNum - 1)) {
+    case 1:
+        return "11";//PASS1
+    case 2:
+        return "16";//PASS2
+    case 3:
+        return "17";//PASS1 + PASS2
+    default:
+        QMessageBox::critical(this, "Error", "Robot::transToIndex()\n From mode exception error.");
+        qCritical() << "Error: Robot::transToIndex()\n From mode exception error.";
+        return "99";
     }
 }
 

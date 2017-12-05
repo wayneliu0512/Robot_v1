@@ -128,7 +128,7 @@ void PreScanGroupBox::keyInFinished()
     setting->nowOffsetList->replace(nowBaseNum-1, offset);
 
     //將讀取到的入料區對應位置存入
-    setting->nowElectorstaticBoxList->replace(nowBaseNum-1, ui->lineEdit_ElecBox->text().section('-',1,1).toInt());
+    setting->nowElectrostaticBoxList->replace(nowBaseNum-1, ui->lineEdit_ElecBox->text().section('-',1,1).toInt());
 
     //if 判斷檢查通過
     ui->groupBox->setEnabled(false);

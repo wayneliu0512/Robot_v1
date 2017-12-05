@@ -48,7 +48,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     serverOnline();
 
-    preScanDialog->exec();
+//    preScanDialog->exec();
 }
 
 MainWindow::~MainWindow()
@@ -539,6 +539,7 @@ void MainWindow::on_Button_Start_clicked()
     preScanDialog = nullptr;
 
     ui->robot->setBase(dynamicSetting->nowOffsetList);
+    ui->robot->setElecBoxList(dynamicSetting->nowElectrostaticBoxList);
     ui->robot->updateBase();
 
     for(int i = 0; i < toolingQuantity; ++i)

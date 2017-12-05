@@ -6,6 +6,7 @@
 #include <QTime>
 #include <QMessageBox>
 #include <QSqlDatabase>
+#include <QDebug>
 
 class Communication;
 class QTcpSocket;
@@ -28,10 +29,10 @@ public:
     explicit Tooling(QWidget *parent = 0);
     ~Tooling();
 
-    void setToolingNumber(int _number);         //設置機箱位置號碼
-    void setToolingSN(const QString _toolingSN);//設置機箱序號
+    void setToolingNumber(int _number);                                   //設置機箱位置號碼
+    void setToolingSN(const QString _toolingSN){ toolingSN = _toolingSN; }//設置機箱序號
     void setSocket(QTcpSocket *_socket);
-    void setLogPath(const QString &_path);
+    void setLogPath(const QString &_path){ logPath = _path; }
 
     Communication *communication;
 signals:

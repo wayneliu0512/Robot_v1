@@ -22,7 +22,7 @@ public:
 //    讀取對應入料區位置列表
     QVector<int> *electrostaticBoxList;
 //    現在對應入料區位置列表
-    QVector<int> *nowElectorstaticBoxList;
+    QVector<int> *nowElectrostaticBoxList;
 //    更新Base,  更新對應入料區位置列表
     void updateSetting();
 //    回到讀取Base座標系的列表, 回到讀取的對應入料區列表
@@ -34,9 +34,10 @@ private:
 
 //    讀取base_setting ini
     void readBaseSetting();
-
 //    讀取module_setting ini
     void readModuleSetting();
+//    分類入料區有幾種機種, 如果全部都是入料區1, 則把所有入料區切換成3
+    void classifyElecBoxList();
 
     int toolingQuantity;
 
