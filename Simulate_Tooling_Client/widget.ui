@@ -18,6 +18,10 @@
   <property name="windowTitle">
    <string>Simulate_Client</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/computer.png</normaloff>:/images/computer.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="2" column="0">
     <layout class="QHBoxLayout" name="horizontalLayout_2">
@@ -138,7 +142,9 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resources.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>lineEdit</sender>

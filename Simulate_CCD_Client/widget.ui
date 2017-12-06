@@ -18,6 +18,10 @@
   <property name="windowTitle">
    <string>Simulate_CCD</string>
   </property>
+  <property name="windowIcon">
+   <iconset resource="resouce.qrc">
+    <normaloff>:/images/barcode-scanner.png</normaloff>:/images/barcode-scanner.png</iconset>
+  </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
     <widget class="QTextBrowser" name="textBrowser"/>
@@ -109,6 +113,8 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="resouce.qrc"/>
+ </resources>
  <connections/>
 </ui>
