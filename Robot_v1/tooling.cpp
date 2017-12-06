@@ -225,7 +225,7 @@ void Tooling::getMoBySN(const QString &_SN)
 
     if(reply->error())
     {
-        qCritical() << "Tooling::getMoBySN() / Db reply error.";
+        qCritical() << "Tooling::getMoBySN() / Web service reply error.";
         MO = "N/A";
         PN = "N/A";
         return;
