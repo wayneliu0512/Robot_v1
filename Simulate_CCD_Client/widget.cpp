@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include <QNetworkInterface>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -21,11 +22,24 @@ Widget::Widget(QWidget *parent) :
     {
         emit output("Connect fail.");
     }
+
+    initialLineEdit();
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::initialLineEdit()
+{
+    foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
+        if(address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
+            ui->lineEdit_IP->setText(address.toString());
+    }
+
+    ui->lineEdit_SN->setText("H611NC2009");
+    ui->lineEdit_MAC->setText("0030641A91EC");
 }
 
 void Widget::connected()

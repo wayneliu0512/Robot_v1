@@ -45,6 +45,8 @@ private:
     QJsonValue ID_value;
 
     void DONE_Respond();
+
+    void initialLineEdit();
 };
 
 #endif // WIDGET_H

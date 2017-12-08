@@ -53,6 +53,8 @@ private:
     void DONE_Respond();
 
     void sendJson(const QString &_testName);
+
+    void initialLineEdit();
 };
 
 #endif // WIDGET_H

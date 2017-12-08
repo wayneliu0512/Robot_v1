@@ -1,5 +1,6 @@
 #include "widget.h"
 #include "ui_widget.h"
+#include <QNetworkInterface>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
@@ -13,11 +14,21 @@ Widget::Widget(QWidget *parent) :
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead_socket()));
 
     connect(this, SIGNAL(output(QString)), ui->textBrowser, SLOT(append(QString)));
+
+    initialLineEdit();
 }
 
 Widget::~Widget()
 {
     delete ui;
+}
+
+void Widget::initialLineEdit()
+{
+    foreach (QHostAddress address, QNetworkInterface::allAddresses()) {
+        if(address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
+            ui->lineEdit_IP->setText(address.toString());
+    }
 }
 
 void Widget::connected()

@@ -4,6 +4,7 @@
 #include <QTcpSocket>
 #include <QXmlStreamReader>
 #include <QTimer>
+#include <QNetworkInterface>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -53,7 +54,8 @@ void MainWindow::readyRead()
         if(xml.isStartElement())
         {
             emit output("XML:" + xml.name().toString());
-            if(xml.name() == "CMD" || xml.name() == "MACHINE" || xml.name() == "UPDATEBASE")
+            if(xml.name() == "CMD" || xml.name() == "MACHINE" || xml.name() == "UPDATEBASE" ||
+               xml.name() == "UPDATESETTING")
             {
                 QString ID = xml.attributes().value("ID").toString();
                 ID_List.append(ID);
