@@ -25,6 +25,8 @@ QList<Task*> MainWindow::inActionList;
 QList<Task*> MainWindow::doneList;
 MainWindow::SystemState MainWindow::systemState = MainWindow::STOP;
 MainWindow::SystemAction MainWindow::systemAction = MainWindow::WAITING;
+MainWindow::TrayMode MainWindow::trayMode = MainWindow::TWO_TYPES;
+
 int MainWindow::toolingQuantity;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -540,7 +542,7 @@ void MainWindow::on_Button_Start_clicked()
 
     ui->robot->setBase(dynamicSetting->nowOffsetList);
     ui->robot->setElecBoxList(dynamicSetting->nowElectrostaticBoxList);
-    ui->robot->updateBase();
+    ui->robot->updateAllSet();
 
     for(int i = 0; i < toolingQuantity; ++i)
     {

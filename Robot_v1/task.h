@@ -9,12 +9,11 @@
 
 class Task
 {
-
 public:
     enum Action{ GET_DUT_TO_TEST, TEST_FINISHED_TO_PASS, TEST_FINISHED_TO_FAIL, TEST_FAIL_TO_RETEST, SCAN_ERROR_TO_FAIL,
-                 UPDATE_TOOLINGS_BASE};
+                 UPDATE_TOOLINGS_BASE, UPDATE_ALLSET};
     enum Command{ TO_SCAN_SN, TO_SCAN_MAC, START_SCAN, TO_SCAN_FAIL, TO_TOOLING, REPUT_TOOLING, TO_PASS, TO_FAIL, POWER_OFF,
-                  POWER_ON, UPDATE_TRAY, UPDATE_BASE};
+                  POWER_ON, UPDATE_TRAY, UPDATE_BASE, UPDATE_SETTING};
     enum Device{ ROBOT, TOOLING, CCD};
 
     Task(Task::Command _command = TO_SCAN_SN, Task::Device _device = ROBOT, int _deviceNumber = 0
@@ -40,7 +39,7 @@ public:
     Device device;
     Task *nextTask;
 
-    int deviceNumber;
+    int deviceNumber, tray_mode;
 };
 
 #endif // TASK_H

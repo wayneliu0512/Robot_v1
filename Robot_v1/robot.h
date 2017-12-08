@@ -24,7 +24,7 @@ public:
     void setBase(const QVector<Base> *_baseList){ baseList = _baseList; }               //設置各機台Base 列表
     void setElecBoxList(const QVector<int> *_elecBoxList){ elecBoxList = _elecBoxList; }//設置各機台入料區
     void connectToRobot();
-    void updateBase(); //派發更新Base任務
+    void updateAllSet(); //派發更新Base任務
 
     static State state;
 

@@ -65,6 +65,8 @@ QString Task::commandToString()
         return "UpdateTray";
     case UPDATE_BASE:
         return "UpdateBase";
+    case UPDATE_SETTING:
+        return "UpdateSetting";
     default:
         qCritical() << "Error: Task::commandToString()";
         return "NULL";
@@ -141,7 +143,7 @@ void Task::createAction(Action _action, int _deviceNumber)
 
         MainWindow::waitingList.append(taskPowerOff);
 
-    }else if(_action == UPDATE_TOOLINGS_BASE)
+    }/*else if(_action == UPDATE_TOOLINGS_BASE)
     {
         Task *taskTooling1 = new Task(Task::UPDATE_BASE, Task::ROBOT, 1);
 
@@ -160,6 +162,37 @@ void Task::createAction(Action _action, int _deviceNumber)
 
         MainWindow::waitingList.prepend(taskTooling1);
 
+    }*/else if(_action == UPDATE_ALLSET){
+
+        Task *taskTooling1 = new Task(Task::UPDATE_BASE, Task::ROBOT, 1);
+
+        // For UPDATESETTING , update trayMode
+        Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
+        settingTask->tray_mode = MainWindow::trayMode;
+
+        taskTooling1->next(settingTask);
+        if(MainWindow::toolingQuantity == 2)
+        {
+            Task *taskTooling2 = new Task(Task::UPDATE_BASE, Task::ROBOT, 2);
+
+            // For UPDATESETTING , update trayMode
+            Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
+            settingTask->tray_mode = MainWindow::trayMode;
+
+            taskTooling1->next(taskTooling2)->next(settingTask);
+        }else if(MainWindow::toolingQuantity > 2)
+        {
+            Task *tempTask = taskTooling1->next(new Task(Task::UPDATE_BASE, Task::ROBOT, 2));
+            for(int i = 0; i < MainWindow::toolingQuantity - 2; i++)
+            {
+                tempTask = tempTask->next(new Task(Task::UPDATE_BASE, Task::ROBOT, i + 3));
+            }
+            // For UPDATESETTING , update trayMode
+            Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
+            settingTask->tray_mode = MainWindow::trayMode;
+            tempTask = tempTask->next(settingTask);
+        }
+        MainWindow::waitingList.prepend(taskTooling1);
     }else
     {
         qCritical() << "Error: Task::createAction()  Case exception.";

@@ -23,6 +23,7 @@ public:
 //    系統狀態
     enum SystemState{ START, STOP };
     enum SystemAction{ INACTION, WAITING };
+    enum TrayMode{ TWO_TYPES = 0, ONE_TYPE};
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
@@ -35,6 +36,8 @@ public:
     static SystemAction systemAction;
 //    機箱的數量
     static int toolingQuantity;
+//    入料區的模式, 單機種 或是 雙機種
+    static TrayMode trayMode;
 
 protected:
     void closeEvent(QCloseEvent *event);

@@ -40,15 +40,15 @@ void Robot::setPortIP(int _port, const QString &_IP)
     communication->setPortIP(_port, _IP);
 }
 
-void Robot::updateBase()
+void Robot::updateAllSet()
 {
    if(baseList->isEmpty())
    {
-       QMessageBox::critical(this, "Error", "Error: Robot::updateBase()\n baseList empty.");
-       qCritical() << "Error: Robot::updateBase() baseList empty.";
+       QMessageBox::critical(this, "Error", "Error: Robot::updateAllSet()\n baseList empty.");
+       qCritical() << "Error: Robot::updateAllSet() baseList empty.";
    }
 
-   Task::createAction(Task::UPDATE_TOOLINGS_BASE);
+   Task::createAction(Task::UPDATE_ALLSET);
    emit addTask();
 }
 
@@ -179,6 +179,14 @@ void Robot::excuteTask(const Task &_task)
         attributes.append("C", baseList->at(_task.deviceNumber-1).C);
 
         communication->sendXML(_task.ID, "ROBOT", "UPDATEBASE", attributes, QString::number(_task.deviceNumber));
+    }else if (_task.command == Task::UPDATE_SETTING) {
+        updateState(INACTION);
+
+        QXmlStreamAttributes attributes;
+        attributes.append("ID", _task.ID);
+        attributes.append("TRAYMODE", QString::number(_task.tray_mode));
+
+        communication->sendXML(_task.ID, "ROBOT", "UPDATESETTING", attributes, "1");
     }
     else
     {

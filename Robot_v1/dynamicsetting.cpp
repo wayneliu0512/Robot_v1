@@ -4,6 +4,8 @@
 #include <QFile>
 #include <QMessageBox>
 #include <QDebug>
+#include "mainwindow.h"
+
 DynamicSetting::DynamicSetting(QObject *parent, const int &_toolingQuantity) :
     QObject(parent), toolingQuantity(_toolingQuantity)
 {    
@@ -86,18 +88,11 @@ void DynamicSetting::readBaseSetting()
         offsetList->replace(i, base);
         baseIni.endGroup();
     }
-    classifyElecBoxList();
 }
 
 void DynamicSetting::readModuleSetting()
 {
     QSettings moduleSetting("Module_Setting.ini", QSettings::IniFormat);
-}
-
-void DynamicSetting::backToOriginalSetting()
-{
-    *nowOffsetList = *offsetList;
-    *nowElectrostaticBoxList = *electrostaticBoxList;
 }
 
 void DynamicSetting::adjustTooling3Offset()
@@ -112,17 +107,27 @@ void DynamicSetting::classifyElecBoxList()
 {
     for(int i = 0; i < toolingQuantity; ++i)
     {
-        if(electrostaticBoxList->at(i) != 1)
+        if(nowElectrostaticBoxList->at(i) != 1)
         {
+            MainWindow::trayMode = MainWindow::TWO_TYPES;
             qDebug() << "ElecBoxList: two type mode";
             return;
         }
     }
     for(int i = 0; i < toolingQuantity; ++i)
     {
-        electrostaticBoxList->replace(i, 3);
+        nowElectrostaticBoxList->replace(i, 3);
     }
+    MainWindow::trayMode = MainWindow::ONE_TYPE;
     qDebug() << "ElecBoxList: one type mode";
+}
+
+void DynamicSetting::backToOriginalSetting()
+{
+    *nowOffsetList = *offsetList;
+    *nowElectrostaticBoxList = *electrostaticBoxList;
+
+    classifyElecBoxList();
 }
 
 void DynamicSetting::updateSetting()
@@ -134,5 +139,6 @@ void DynamicSetting::updateSetting()
         baseIni.setValue("ElectrostaticBoxMatch/Base" + QString::number(i+1), nowElectrostaticBoxList->at(i));
     }
 
-    readBaseSetting();
+    classifyElecBoxList();
+//    readBaseSetting();
 }
