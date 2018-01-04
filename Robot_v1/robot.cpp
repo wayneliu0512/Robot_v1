@@ -75,11 +75,11 @@ void Robot::excuteTask(const Task &_task)
     {
         updateState(INACTION);
 
-        QString from = transFromIndex(_task.deviceNumber);
+//        QString from = transFromIndex(_task.deviceNumber);
 
         QXmlStreamAttributes attributes;
         attributes.append("ID", _task.ID);
-        attributes.append("FROM", from);
+        attributes.append("FROM", "13");
         attributes.append("TO", "13");
 
         communication->sendXML(_task.ID, "ROBOT", "CMD", attributes, "1");

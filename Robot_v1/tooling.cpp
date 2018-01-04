@@ -136,6 +136,9 @@ void Tooling::receive_TestStart(const QString &_testName)
 
 void Tooling::insertDb(const QString &_testName)
 {
+#if defined(Q_OS_MACOS)
+
+#elif defined(Q_OS_WIN)
     QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn) "
                                 "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120))")
                                 .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName);
@@ -152,6 +155,7 @@ void Tooling::insertDb(const QString &_testName)
         qCritical() << "Db insert error.";
 
     db.close();
+#endif
 }
 
 void Tooling::receive_TestFinished(const QString &_testName, const int &_testResult)
@@ -178,6 +182,9 @@ void Tooling::receive_TestFinished(const QString &_testName, const int &_testRes
 
 void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
 {
+#if defined(Q_OS_MACOS)
+
+#elif defined(Q_OS_WIN)
     QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
                                 .arg(_result).arg(_testTime).arg(SN).arg(_testName);
 
@@ -193,6 +200,7 @@ void Tooling::updateDb(const QString &_testName, const QString &_result, int _te
         qCritical() << "Db update error.";
 
     db.close();
+#endif
 }
 
 void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
@@ -207,7 +215,7 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
 
 void Tooling::getMoBySN(const QString &_SN)
 {
-    QString getUrl("http://203.70.94.183/MESWebService_3.5/MESWebService_3.5/MESWebService.asmx/GetADLINKSNInfo?");
+    QString getUrl("http://192.168.0.1/MESWebService_3.5/MESWebService_3.5/MESWebService.asmx/GetADLINKSNInfo?");
 
     QNetworkAccessManager manager;
     QNetworkReply *reply;
@@ -430,6 +438,9 @@ bool Tooling::updateState(State _nextState)
 
 void Tooling::initialTestList()
 {
+#if defined(Q_OS_MAC)
+
+#elif defined(Q_OS_WIN)
     QFile logFile(logPath + "\\" + SN + ".log");
     logFile.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&logFile);
@@ -442,7 +453,7 @@ void Tooling::initialTestList()
         out << "Test item:" << ui->treeWidget->topLevelItem(i)->text(0)
             << "\tResult:" << ui->treeWidget->topLevelItem(i)->text(1)
             << "\tSpend time:" << ui->treeWidget->topLevelItem(i)->text(3) << "(sec)" << endl;
-
+#endif
     ui->treeWidget->clear();
 }
 

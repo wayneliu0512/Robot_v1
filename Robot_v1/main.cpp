@@ -38,10 +38,15 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+#if defined(Q_OS_MACOS)
+    QDir dir("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/DebugLog");
+#elif defined(Q_OS_WIN)
     QDir dir("DebugLog");
+#endif
+
     if(!dir.exists())
     {
-        QMessageBox::critical(&QWidget(), "Error", "DebugLog folder doesn't exist.");
+        QMessageBox::critical(0, "Error", "DebugLog folder doesn't exist.");
         return 1;
     }
 //    安裝MessageHandler可以輸出QtDebug訊息
