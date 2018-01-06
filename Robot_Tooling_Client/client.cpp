@@ -178,7 +178,7 @@ void Client::readyRead_serial()
             {
                 timer->stop();
 
-                testName = "final";
+                testName = "Final";
                 if(controlWAutoMESProgram_PASS())
                     sendJson(testName, 1, 1);
                 else
@@ -187,7 +187,7 @@ void Client::readyRead_serial()
             {
                 timer->stop();
 
-                testName = "final";
+                testName = "Final";
                 sendJson(testName, 1, 0);
             }
 //            接收開始測試項目
@@ -242,7 +242,8 @@ void Client::timeoutForBoot()
     if(timerCounter <= timerSecond_checkOnline)
         return;
 
-    controlWAutoMESProgram_FAIL();
+    sendJson("Final", 1, 0); //FAIL
+//    controlWAutoMESProgram_FAIL();
 
     timer->stop();
     timerCounter = 0;

@@ -525,8 +525,8 @@ void MainWindow::on_Button_Start_clicked()
     if(systemState == START)
         return;
 
-//    if(!checkDeviceAllConnected())
-//        return;
+    if(!checkDeviceAllConnected())
+        return;
 
     if(preScanDialog == nullptr)
         createPreScanDialog();
@@ -543,15 +543,15 @@ void MainWindow::on_Button_Start_clicked()
             {
                 qDebug() << "Use old Base_setting";
                 dynamicSetting->backToOriginalSetting();
-                if(toolingQuantity >= 3)
-                    dynamicSetting->adjustTooling3Offset();
+//                if(toolingQuantity >= 3)
+//                    dynamicSetting->adjustTooling3Offset();
                 break;
             }
         }else if(result == 1)
         {
             dynamicSetting->updateSetting();
-            if(toolingQuantity >= 3)
-                dynamicSetting->adjustTooling3Offset();
+//            if(toolingQuantity >= 3)
+//                dynamicSetting->adjustTooling3Offset();
             break;
         }
     }
