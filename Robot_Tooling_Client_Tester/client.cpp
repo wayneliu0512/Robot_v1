@@ -60,16 +60,24 @@ void Client::readyRead_serial()
 {
     static QByteArray dataBuffer;
     dataBuffer.append(serial->readAll());
-
+    serial->flush();
     qDebug() << "dataBuffer << " + dataBuffer;
 
-    QRegularExpression reg("[@]{1}(?<text>\\w*|\\w*[/][FP])[;]{1}");
-    QRegularExpressionMatch match = reg.match(dataBuffer);
-
-    QString captureStr = match.captured("text");
-
-    if(match.hasMatch())
+    QByteArray newStr;
+    foreach (char in, dataBuffer)
     {
+        if(in != '\0') newStr.append(in);
+    }
+
+//    Example:
+//    1.單純接收開始測試項目:     @SATA;
+//    2.接收測試完成的項目:      @SATA/P;
+//    3.接收全部測試完成的結果:   @PASSF;
+    QRegularExpression reg("[@]{1}(?<text>\\w*|\\w*[/][FP])[;]{1}");
+    QRegularExpressionMatchIterator iter = reg.globalMatch(QString(newStr));
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString captureStr = match.captured("text");
         if(captureStr.contains('/'))
         {
             qDebug() << "dataConfirm << " + captureStr;
@@ -90,19 +98,21 @@ void Client::readyRead_serial()
         }else
         {
             qDebug() << "dataConfirm << " + captureStr;
+//            接收全部測試完成的結果
             if(captureStr == "PASSF")
             {
                 timer->stop();
 
-                testName = "final";
-                sendJson(testName, 1, 0);
+                testName = "Final";
+                sendJson(testName, 1, 1);
             }else if(captureStr == "FAILF")
             {
                 timer->stop();
 
-                testName = "final";
+                testName = "Final";
                 sendJson(testName, 1, 0);
             }
+//            接收開始測試項目
             else
             {
                 timerCounter = 0;
@@ -113,21 +123,19 @@ void Client::readyRead_serial()
         }
         dataBuffer.clear();
     }
-    //SN request
-    else if(dataBuffer.contains(0xBC))
+    //SN request 跟Justin程式做溝通
+    if(dataBuffer.contains(0xBC))
     {
         serial->write("B");
         qDebug() << "SendToDOS >> B";
-
         dataBuffer.clear();
     }
-    //SN request
+    //SN request 跟Justin程式做溝通
     else if(dataBuffer.contains(0x07))
     {
         QString sendData = SN + "1" + MAC1 + "                          "; // 26 spaces for Jastin.
         serial->write(sendData.toLocal8Bit().data());
         qDebug() << "SendToDOS >> " + sendData;
-
         dataBuffer.clear();
     }
 }

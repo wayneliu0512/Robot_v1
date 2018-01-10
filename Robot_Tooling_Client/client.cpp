@@ -138,21 +138,25 @@ void Client::readyRead_serial()
 {  
     static QByteArray dataBuffer;
     dataBuffer.append(serial->readAll());
+    serial->flush();
 
     qDebug() << "dataBuffer << " + dataBuffer;
+
+    QByteArray newStr;
+    foreach (char in, dataBuffer)
+    {
+        if(in != '\0') newStr.append(in);
+    }
 
 //    Example:
 //    1.單純接收開始測試項目:     @SATA;
 //    2.接收測試完成的項目:      @SATA/P;
 //    3.接收全部測試完成的結果:   @PASSF;
     QRegularExpression reg("[@]{1}(?<text>\\w*|\\w*[/][FP])[;]{1}");
-    QRegularExpressionMatch match = reg.match(dataBuffer);
-
-    QString captureStr = match.captured("text");
-
-    if(match.hasMatch())
-    {
-//        單一測項測試完成時
+    QRegularExpressionMatchIterator iter = reg.globalMatch(QString(newStr));
+    while (iter.hasNext()) {
+        QRegularExpressionMatch match = iter.next();
+        QString captureStr = match.captured("text");
         if(captureStr.contains('/'))
         {
             qDebug() << "dataConfirm << " + captureStr;
@@ -199,15 +203,12 @@ void Client::readyRead_serial()
                 sendJson(testName, 0, 0);
             }
         }
-        dataBuffer.clear();
     }
     //SN request 跟Justin程式做溝通
-    else if(dataBuffer.contains(0xBC))
+    if(dataBuffer.contains(0xBC))
     {
         serial->write("B");
         qDebug() << "SendToDOS >> B";
-
-        dataBuffer.clear();
     }
     //SN request 跟Justin程式做溝通
     else if(dataBuffer.contains(0x07))
@@ -215,9 +216,8 @@ void Client::readyRead_serial()
         QString sendData = SN + "1" + MAC1 + "                          "; // 26 spaces for Jastin.
         serial->write(sendData.toLocal8Bit().data());
         qDebug() << "SendToDOS >> " + sendData;
-
-        dataBuffer.clear();
     }
+    dataBuffer.clear();
 }
 
 void Client::sendJson(const QString &_testName, const int &_testStage, const int &_testResult)

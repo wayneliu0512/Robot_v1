@@ -18,7 +18,7 @@ Tooling::Tooling(QWidget *parent) :
     ui(new Ui::Tooling)
 {
     ui->setupUi(this);
-    dsn = QString("DRIVER={SQL Server};SERVER=tw04436p01;UID=sa;PWD=a123456;DATABASE=SmartFactory");
+    dsn = QString("DRIVER={SQL Server};SERVER=172.16.4.139;UID=sa;PWD=a123456;DATABASE=SmartFactory");
 
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
@@ -110,13 +110,16 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
     if(_testResult == 1){
         if(!updateState(TEST_FINISHED_PASS))
             return;
-        result = "pass";
+        result = "Pass";
     }
     else{
         if(!updateState(TEST_FINISHED_FAIL))
             return;
-        result = "fail";
+        result = "Fail";
     }
+
+    insertDb("Final");
+    updateDb("Final", result, 0);
 
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "End Test" << result);
     ui->treeWidget->insertTopLevelItem(0, item);
@@ -139,18 +142,32 @@ void Tooling::insertDb(const QString &_testName)
 #if defined(Q_OS_MACOS)
 
 #elif defined(Q_OS_WIN)
-    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn) "
-                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120))")
-                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName);
 
+    //Check Db connection
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
     db.setDatabaseName(dsn);
-
     if(!db.open())
         qCritical() << "Db open fail: " << db.lastError().text();
 
+    //Get Max Version of test on Db
+    QString cmdSelect = QString("select MAX(Version) as Version from RobotDashboard where SN = '%1'").arg(toolingSN);
     QSqlQuery sq(db);
+    if(!sq.exec(cmdSelect))
+        qCritical() << "Db select error.";
 
+    //if Max Version = NULL, Version = 1, First time insert
+    //if Max Version != NULL, update version, ++Version
+    int version = 0;
+    version = sq.value(0).toInt();
+    if(version==0)
+        version=1;
+    else
+        ++version;
+
+    //Insert data to Db
+    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn, Version) "
+                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120), '%8')")
+                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(version);
     if(!sq.exec(cmdInsert))
         qCritical() << "Db insert error.";
 
