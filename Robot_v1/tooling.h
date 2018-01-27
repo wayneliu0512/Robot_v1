@@ -80,12 +80,14 @@ private:
 //    上傳Db, 測試開始時 insert, 測試結束時 update 相對應的測試項目
     void insertDb(const QString &_testName);
     void updateDb(const QString &_testName, const QString &_result, int _testTime);
+    void updateDbVersion();
 
     State state = CONNECTED;        //機台狀態
     TestTime testTime = ZERO_TIME;  //機台測試次數
     QString toolingSN;              //機台序號
     int toolingNumber;              //機台位置編號
     QString dsn;                    //DB 使用的Dsn碼
+    int dbVersion = 0;              //DB 使用的Version
     QTimer clockTimer;
     QTime clockTime, testStartTime;
     QString SN, MAC, MO, PN;

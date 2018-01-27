@@ -16,8 +16,7 @@ public:
                   POWER_ON, UPDATE_TRAY, UPDATE_BASE, UPDATE_SETTING};
     enum Device{ ROBOT, TOOLING, CCD};
 
-    Task(Task::Command _command = TO_SCAN_SN, Task::Device _device = ROBOT, int _deviceNumber = 0
-           , Task *_nextTask = nullptr);
+    Task(Task::Command _command = TO_SCAN_SN, Task::Device _device = ROBOT, int _deviceNumber = 0);
 
     ~Task();
 //    創建任務, 創建成功會加入waitingList

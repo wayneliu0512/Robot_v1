@@ -45,7 +45,7 @@ private:
     Ui::Widget *ui;
 
     QTcpSocket *socket;
-
+    QDataStream out;
     QJsonValue ID_value;
 
     int testResult = 0, testStage = 0;

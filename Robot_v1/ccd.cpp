@@ -56,13 +56,13 @@ void Ccd::receiveError(const QString &_ID)
     {
         if(MainWindow::inActionList.at(i)->ID == _ID)
         {
-            Task *task = MainWindow::inActionList.at(i);
+            Task *task = MainWindow::inActionList[i];
             if(task->nextTask)
             {
                 task->nextTask->deleteNextAll();
-                task->next(nullptr);
+                task->nextTask = nullptr;
             }
-            task->next(Task::getAction(Task::SCAN_ERROR_TO_FAIL, task->deviceNumber));
+            task->nextTask = Task::getAction(Task::SCAN_ERROR_TO_FAIL, task->deviceNumber);
         }
     }
 }

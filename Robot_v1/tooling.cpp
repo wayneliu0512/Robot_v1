@@ -18,7 +18,7 @@ Tooling::Tooling(QWidget *parent) :
     ui(new Ui::Tooling)
 {
     ui->setupUi(this);
-    dsn = QString("DRIVER={SQL Server};SERVER=172.16.4.139;UID=sa;PWD=a123456;DATABASE=SmartFactory");
+    dsn = QString("DRIVER={SQL Server};SERVER=%1;UID=sa;PWD=a123456;DATABASE=SmartFactory").arg(MainWindow::dbUrl);
 
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
@@ -149,25 +149,11 @@ void Tooling::insertDb(const QString &_testName)
     if(!db.open())
         qCritical() << "Db open fail: " << db.lastError().text();
 
-    //Get Max Version of test on Db
-    QString cmdSelect = QString("select MAX(Version) as Version from RobotDashboard where SN = '%1'").arg(toolingSN);
-    QSqlQuery sq(db);
-    if(!sq.exec(cmdSelect))
-        qCritical() << "Db select error.";
-
-    //if Max Version = NULL, Version = 1, First time insert
-    //if Max Version != NULL, update version, ++Version
-    int version = 0;
-    version = sq.value(0).toInt();
-    if(version==0)
-        version=1;
-    else
-        ++version;
-
     //Insert data to Db
     QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn, Version) "
                                 "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120), '%8')")
-                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(version);
+                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(dbVersion);
+    QSqlQuery sq(db);
     if(!sq.exec(cmdInsert))
         qCritical() << "Db insert error.";
 
@@ -220,6 +206,32 @@ void Tooling::updateDb(const QString &_testName, const QString &_result, int _te
 #endif
 }
 
+void Tooling::updateDbVersion()
+{
+    //Check Db connection
+    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+    db.setDatabaseName(dsn);
+    if(!db.open())
+        qCritical() << "Db open fail: " << db.lastError().text();
+
+    //Get Max Version of test on Db
+    QString cmdSelect = QString("select MAX(Version) from RobotDashboard where SN = '%1'").arg(SN);
+    QSqlQuery sq(db);
+    if(!sq.exec(cmdSelect))
+        qCritical() << "Db select error.";
+
+    //if Max Version = NULL, Version = 1, First time insert
+    //if Max Version != NULL, update version, ++Version
+    sq.next();
+    dbVersion = sq.value(0).toInt();
+    qDebug() << "version1 : " << dbVersion;
+    if(dbVersion==0)
+        dbVersion=1;
+    else
+        ++dbVersion;
+    qDebug() << "version2 : " << dbVersion;
+}
+
 void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
 {
     if(_toolingNumber != toolingNumber)
@@ -232,7 +244,7 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
 
 void Tooling::getMoBySN(const QString &_SN)
 {
-    QString getUrl("http://192.168.0.1/MESWebService_3.5/MESWebService_3.5/MESWebService.asmx/GetADLINKSNInfo?");
+    QString getUrl(MainWindow::webServiceUrl);
 
     QNetworkAccessManager manager;
     QNetworkReply *reply;
@@ -325,6 +337,7 @@ void Tooling::excuteTask(const Task &_task)
         }
         clockTimer.start(1000);
         sendToClient_SN_MAC();
+        updateDbVersion();
         emit excuteTaskByRobot(_task);
     }
     else if(_task.command == Task::POWER_OFF)

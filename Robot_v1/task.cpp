@@ -4,11 +4,12 @@
 #include <QThread>
 #include "mainwindow.h"
 
-Task::Task(Task::Command _command, Task::Device _device, int _deviceNumber, Task *_nextTask) :
-    command(_command), device(_device), deviceNumber(_deviceNumber), nextTask(_nextTask)
+Task::Task(Task::Command _command, Task::Device _device, int _deviceNumber) :
+    command(_command), device(_device), deviceNumber(_deviceNumber)
 {
     QThread::msleep(10);
     ID = QString::number(QDateTime::currentMSecsSinceEpoch());
+    nextTask = nullptr;
 }
 
 Task::~Task()
@@ -47,6 +48,8 @@ QString Task::commandToString()
         return "ToScanSN";
     case TO_SCAN_MAC:
         return "ToScanMAC";
+    case TO_SCAN_FAIL:
+        return "ToScanFail";
     case START_SCAN:
         return "StartScan";
     case TO_TOOLING:
@@ -186,9 +189,25 @@ Task *Task::getAction(Action _action, int _deviceNumber)
     if(_action == SCAN_ERROR_TO_FAIL)
     {
         Task *taskToFail = new Task(Task::TO_SCAN_FAIL, Task::ROBOT, _deviceNumber);
-        Task *taskUpdateTray = new Task(Task::UPDATE_TRAY, Task::ROBOT);
+        Task *taskUpdateTray1 = new Task(Task::UPDATE_TRAY, Task::ROBOT);
+        Task *taskUpdateTray2 = new Task(Task::UPDATE_TRAY, Task::ROBOT);
+        Task *taskToScanSN = new Task(Task::TO_SCAN_SN, Task::ROBOT, _deviceNumber);
+        Task *taskStartScanSN = new Task(Task::START_SCAN, Task::CCD, _deviceNumber);
+        Task *taskToScanMAC = new Task(Task::TO_SCAN_MAC, Task::ROBOT, _deviceNumber);
+        Task *taskStartScanMAC = new Task(Task::START_SCAN, Task::CCD, _deviceNumber);
+        Task *taskToTooling = new Task(Task::TO_TOOLING, Task::ROBOT, _deviceNumber);
+        Task *taskPowerOn = new Task(Task::POWER_ON, Task::TOOLING, _deviceNumber);
 
-        return taskToFail->next(taskUpdateTray);
+        taskToFail->next(taskUpdateTray1)
+                ->next(taskToScanSN)
+                ->next(taskStartScanSN)
+                ->next(taskToScanMAC)
+                ->next(taskStartScanMAC)
+                ->next(taskToTooling)
+                ->next(taskPowerOn)
+                ->next(taskUpdateTray2);
+
+        return taskToFail;
     }else
     {
         qCritical() << "Error: Task::getAction()  Case exception";

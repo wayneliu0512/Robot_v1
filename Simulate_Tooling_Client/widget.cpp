@@ -35,6 +35,8 @@ void Widget::connected()
 {
     emit output("Connected.");
     ui->lineEdit->setFocus();
+    out.setDevice(socket);
+    out.setVersion(QDataStream::Qt_5_7);
 }
 
 void Widget::disconnected()
@@ -65,7 +67,15 @@ void Widget::sendJson(const QString &_testName)
 
     QJsonDocument jsonDoc(jsonObj);
 
-    socket->write(jsonDoc.toJson());
+    out << jsonDoc.toJson();
+//    QJsonObject jsonObj;
+//    jsonObj.insert("TestName", _testName);
+//    jsonObj.insert("TestStage", testStage);
+//    jsonObj.insert("TestResult", testResult);
+
+//    QJsonDocument jsonDoc(jsonObj);
+
+//    socket->write(jsonDoc.toJson());
 
     emit output("SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson()));
 }

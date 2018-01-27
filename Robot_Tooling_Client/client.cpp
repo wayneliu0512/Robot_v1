@@ -83,6 +83,8 @@ void Client::connected()
 {
     qDebug() << "Connected!(Socket)";
     socket->write(toolingNum.toLatin1());
+    out.setDevice(socket);
+    out.setVersion(QDataStream::Qt_5_7);
 }
 
 void Client::disconnected()
@@ -203,12 +205,14 @@ void Client::readyRead_serial()
                 sendJson(testName, 0, 0);
             }
         }
+        dataBuffer.clear();
     }
     //SN request 跟Justin程式做溝通
     if(dataBuffer.contains(0xBC))
     {
         serial->write("B");
         qDebug() << "SendToDOS >> B";
+        dataBuffer.clear();
     }
     //SN request 跟Justin程式做溝通
     else if(dataBuffer.contains(0x07))
@@ -216,8 +220,8 @@ void Client::readyRead_serial()
         QString sendData = SN + "1" + MAC1 + "                          "; // 26 spaces for Jastin.
         serial->write(sendData.toLocal8Bit().data());
         qDebug() << "SendToDOS >> " + sendData;
+        dataBuffer.clear();
     }
-    dataBuffer.clear();
 }
 
 void Client::sendJson(const QString &_testName, const int &_testStage, const int &_testResult)
@@ -229,7 +233,16 @@ void Client::sendJson(const QString &_testName, const int &_testStage, const int
 
     QJsonDocument jsonDoc(jsonObj);
 
-    socket->write(jsonDoc.toJson());
+    out << jsonDoc.toJson();
+
+//    QJsonObject jsonObj;
+//    jsonObj.insert("TestName", _testName);
+//    jsonObj.insert("TestStage", _testStage);
+//    jsonObj.insert("TestResult", _testResult);
+
+//    QJsonDocument jsonDoc(jsonObj);
+
+//    socket->write(jsonDoc.toJson());
     qDebug() << "SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson());
 }
 

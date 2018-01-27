@@ -31,6 +31,7 @@ private:
 
     QSerialPort *serial;
     QTcpSocket *socket;
+    QDataStream out;
 
     QString SN, MAC1;
     QString ip, com, toolingNum;

@@ -42,7 +42,7 @@ Communication::Communication(QWidget *parent, Communication::Protocol_ACK _proto
 Communication::~Communication()
 {
     if(protocol_ACK == ACK)
-        delete ID_List;
+        ID_List->clear();
 }
 
 void Communication::setPortIP(int _port, const QString &_IP)
@@ -88,6 +88,8 @@ bool Communication::setSocket(QTcpSocket *_socket)
 
     socket = _socket;
     socket->setParent(this);
+    in.setDevice(socket);
+    in.setVersion(QDataStream::Qt_5_7);
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
     connect(socket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError()));
     state_Connection = ONLINE;
@@ -196,7 +198,6 @@ void Communication::ACK_JSON_ReadSocket()
 
         emit receiveErrorDONE(ID_value.toString());
     }
-
     if(type_value.toString() == "ACK")
     {
         if(ID_value.toString() == ACK_ID)
@@ -213,10 +214,10 @@ void Communication::ACK_JSON_ReadSocket()
         {
             qDebug() << "DONE Back << " + readData;
 
-            if(!SN_value.isUndefined())
+            if(!SN_value.isUndefined()||!SN_value.toString().isEmpty())
                 emit receiveSN(SN_value.toString());
 
-            if(!MAC_value.isUndefined())
+            if(!MAC_value.isUndefined()||!MAC_value.toString().isEmpty())
                 emit receiveMAC(MAC_value.toString());
 
             ID_List->removeOne(ID_value.toString());
@@ -232,8 +233,7 @@ void Communication::prependNextTask(const QString _ID)
     {
         if(MainWindow::inActionList.at(i)->ID == _ID)
         {
-            Task *nextTask = MainWindow::inActionList.at(i)->takeNextTask();
-
+            Task *nextTask = MainWindow::inActionList[i]->takeNextTask();
             if(nextTask == nullptr)
                 return;
 
@@ -243,16 +243,32 @@ void Communication::prependNextTask(const QString _ID)
 }
 
 void Communication::NO_ACK_Json_ReadSocket()
-{
-    QByteArray readData = socket->readAll();
-    qDebug() << "ReadFromNoAckJson: " + readData;
+{   
+    in.startTransaction();
 
-    QJsonDocument doc = QJsonDocument::fromJson(readData);
-    QJsonValue testName_value = doc.object().value("TestName");
-    QJsonValue testStage_value = doc.object().value("TestStage");
-    QJsonValue testResult_value = doc.object().value("TestResult");
+    while (!in.atEnd()) {
+        QByteArray receiveData;
+        in >> receiveData;
 
-    emit receiveMessage(testName_value.toString(), testStage_value.toInt(), testResult_value.toInt());
+        QJsonDocument doc = QJsonDocument::fromJson(receiveData);
+        QJsonValue testName_value = doc.object().value("TestName");
+        QJsonValue testStage_value = doc.object().value("TestStage");
+        QJsonValue testResult_value = doc.object().value("TestResult");
+
+        emit receiveMessage(testName_value.toString(), testStage_value.toInt(), testResult_value.toInt());
+        qDebug() << "ReadFromNoAckJson: " + receiveData;
+    }
+    if(!in.commitTransaction()) return;
+
+//    QByteArray readData = socket->readAll();
+//    qDebug() << "ReadFromNoAckJson: " + readData;
+
+//    QJsonDocument doc = QJsonDocument::fromJson(readData);
+//    QJsonValue testName_value = doc.object().value("TestName");
+//    QJsonValue testStage_value = doc.object().value("TestStage");
+//    QJsonValue testResult_value = doc.object().value("TestResult");
+
+//    emit receiveMessage(testName_value.toString(), testStage_value.toInt(), testResult_value.toInt());
 }
 
 void Communication::sendXML(const QString &_ID, const QString &_startElement1, const QString &_startElement2,

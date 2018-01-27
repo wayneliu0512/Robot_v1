@@ -38,6 +38,9 @@ public:
     static int toolingQuantity;
 //    入料區的模式, 單機種 或是 雙機種
     static TrayMode trayMode;
+//    Db, Web service 的URL
+    static QString dbUrl;
+    static QString webServiceUrl;
 
 protected:
     void closeEvent(QCloseEvent *event);

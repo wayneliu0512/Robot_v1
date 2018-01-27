@@ -64,6 +64,7 @@ private:
     Protocol_Format protocol_Format;
 
     QTcpSocket *socket;
+    QDataStream in;
     int port;
     QString IP;
 //    紀錄ID用的

@@ -26,6 +26,8 @@ QList<Task*> MainWindow::doneList;
 MainWindow::SystemState MainWindow::systemState = MainWindow::STOP;
 MainWindow::SystemAction MainWindow::systemAction = MainWindow::WAITING;
 MainWindow::TrayMode MainWindow::trayMode = MainWindow::TWO_TYPES;
+QString MainWindow::dbUrl = "";
+QString MainWindow::webServiceUrl = "";
 
 int MainWindow::toolingQuantity;
 
@@ -75,16 +77,19 @@ void MainWindow::closeEvent(QCloseEvent *event)
             Task *task = waitingList.takeFirst();
             task->deleteNextAll();
         }
+        qDebug() << "Delete Waiting list";
 
         while(!inActionList.isEmpty()){
             Task *task = inActionList.takeFirst();
             task->deleteNextAll();
         }
+        qDebug() << "Delete inAction list";
 
         while(!doneList.isEmpty()){
             Task *task = doneList.takeFirst();
             task->deleteNextAll();
         }
+        qDebug() << "Delete Done list";
         event->accept();
     }
 }
@@ -142,6 +147,24 @@ void MainWindow::readSettingFile()
         exit(1);
     }else{
         robotPort = setting.value("Option/RobotPort").toInt();
+    }
+
+    if(setting.value("Option/DbUrl") == QVariant())
+    {
+        QMessageBox::critical(this, "Read file Error", "Error: We couldn't read Setting.ini Option/DbUrl");
+        qWarning() << "Error: We couldn't read Setting.ini Option/DbUrl";
+        exit(1);
+    }else{
+        dbUrl = setting.value("Option/DbUrl").toString();
+    }
+
+    if(setting.value("Option/WebServiceUrl") == QVariant())
+    {
+        QMessageBox::critical(this, "Read file Error", "Error: We couldn't read Setting.ini Option/WebServiceUrl");
+        qWarning() << "Error: We couldn't read Setting.ini Option/WebServiceUrl";
+        exit(1);
+    }else{
+        webServiceUrl = setting.value("Option/WebServiceUrl").toString();
     }
 
     if(setting.value("Option/ToolingLogPath") == QVariant())
@@ -525,8 +548,8 @@ void MainWindow::on_Button_Start_clicked()
     if(systemState == START)
         return;
 
-    if(!checkDeviceAllConnected())
-        return;
+//    if(!checkDeviceAllConnected())
+//        return;
 
     if(preScanDialog == nullptr)
         createPreScanDialog();
