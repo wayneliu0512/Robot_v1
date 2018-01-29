@@ -548,8 +548,8 @@ void MainWindow::on_Button_Start_clicked()
     if(systemState == START)
         return;
 
-//    if(!checkDeviceAllConnected())
-//        return;
+    if(!checkDeviceAllConnected())
+        return;
 
     if(preScanDialog == nullptr)
         createPreScanDialog();
@@ -631,15 +631,15 @@ bool MainWindow::checkDeviceAllConnected()
         return false;
     }
 
-    for( int i = 0; i < tooling.length(); i++)
-    {
-        if(tooling.at(i)->communication->state_Connection == Communication::OFFLINE)
-        {
-            QMessageBox::critical(this, tr("Error"), tr("Tooling connection error"),QMessageBox::Ok);
-            qDebug() << "Tooling connection error";
-            return false;
-        }
-    }
+//    for( int i = 0; i < tooling.length(); i++)
+//    {
+//        if(tooling.at(i)->communication->state_Connection == Communication::OFFLINE)
+//        {
+//            QMessageBox::critical(this, tr("Error"), tr("Tooling connection error"),QMessageBox::Ok);
+//            qDebug() << "Tooling connection error";
+//            return false;
+//        }
+//    }
 
     return true;
 }

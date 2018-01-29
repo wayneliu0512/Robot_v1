@@ -176,8 +176,7 @@ void Tooling::receive_TestFinished(const QString &_testName, const int &_testRes
         {
             testTime = QTime::fromString(ui->treeWidget->topLevelItem(i)->text(2)).secsTo(clockTime);
             ui->treeWidget->topLevelItem(i)->setText(1, result);
-            ui->treeWidget->topLevelItem(i)
-                    ->setText(3, QString::number(testTime));
+            ui->treeWidget->topLevelItem(i)->setText(3, QString::number(testTime));
             updateDb(_testName, result, testTime);
         }
     }
