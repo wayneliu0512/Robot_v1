@@ -2,7 +2,7 @@
 #define TASKMANAGER_H
 #include <QThread>
 /* 派發任務系統：
-   以多線程實現, 當系統開始運作, 新的線程while迴圈會開始作動, 持續檢查有無任務可以執行, 並且派發任務
+   當系統開始運作, 新的線程while迴圈會開始作動, 持續檢查有無任務可以執行, 並且派發任務
 */
 class QTimer;
 class Task;

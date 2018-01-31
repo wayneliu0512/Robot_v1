@@ -38,22 +38,25 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->gridLayout->setSpacing(20);
 
+//    讀取設定檔
     readSettingFile();
 
     dynamicSetting = new DynamicSetting(this, toolingQuantity);
 
+//    創建Gui設定
     createActions();
     createMenus();
     createPreScanDialog();
 
+//    初始化各設備
     initialToolings();
     initialRobot();
     initialCcd();
     initialTaskManager();
 
+//    Server開啟
     serverOnline();
 
-//  preScanDialog->exec();
 }
 
 MainWindow::~MainWindow()
@@ -67,7 +70,9 @@ void MainWindow::closeEvent(QCloseEvent *event)
                             QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Cancel)
     {
         event->ignore();
-    }else
+    }
+//    刪除各列表內任務
+    else
     {
         systemState = STOP;
         QThread::msleep(500);
@@ -94,6 +99,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
     }
 }
 
+//讀取設定檔
 void MainWindow::readSettingFile()
 {
 #if defined(Q_OS_MACOS)
@@ -224,6 +230,7 @@ void MainWindow::readSettingFile()
     }
 }
 
+//創建QAction
 void MainWindow::createActions()
 {
     settingAction = new QAction(tr("&Setting"), this);
@@ -263,6 +270,7 @@ void MainWindow::createMenus()
     optionMenu->addAction(aboutAction);
 }
 
+//創建預刷 Dialog, (PreScanGroupBox數量動態變化)
 void MainWindow::createPreScanDialog()
 {
     QList<PreScanGroupBox*> groupBoxList;
@@ -290,6 +298,7 @@ void MainWindow::createPreScanDialog()
         connect(groupBoxList.at(i), SIGNAL(allComplete()), preScanDialog, SLOT(accept()));
 }
 
+//創建Tooling, (Tooling數量動態變化)
 void MainWindow::initialToolings()
 {   
     QGridLayout *toolingGridLayout = new QGridLayout;
@@ -313,6 +322,7 @@ void MainWindow::initialToolings()
    // 加入 scrollBar
 }
 
+//創建Robot
 void MainWindow::initialRobot()
 {
     ui->robot->setPortIP(robotPort, robotIP);
@@ -323,6 +333,7 @@ void MainWindow::initialRobot()
     connect(this, SIGNAL(systemStop()), ui->robot, SLOT(aboutToStop()));
 }
 
+//創建CCd
 void MainWindow::initialCcd()
 {
     connect(ui->ccd->communication, SIGNAL(receiveACK(QString)), this, SLOT(moveTask_Wait_To_InAciton(QString)));
@@ -335,6 +346,7 @@ void MainWindow::initialCcd()
     }
 }
 
+//創建TaskManager
 void MainWindow::initialTaskManager()
 {
     taskManager = new TaskManager(this);
@@ -345,7 +357,6 @@ void MainWindow::initialTaskManager()
 
     for(int i = 0; i < toolingQuantity; i++)
     {
-//        connect(tooling.at(i), SIGNAL(addTask()), taskManager, SLOT(startRunningTasks()));
         connect(taskManager, SIGNAL(excuteToolingTask(Task)), tooling.at(i), SLOT(excuteTask(Task)));
     }
 
@@ -353,6 +364,7 @@ void MainWindow::initialTaskManager()
     connect(taskManager, SIGNAL(excuteCcdTask(Task)), ui->ccd, SLOT(excuteTask(Task)));
 }
 
+//Server 開啟
 void MainWindow::serverOnline()
 {
     server = new QTcpServer(this);
@@ -370,6 +382,7 @@ void MainWindow::serverOnline()
     }
 }
 
+//新增新連線
 void MainWindow::newConnection()
 {
     socket = server->nextPendingConnection();
@@ -378,6 +391,7 @@ void MainWindow::newConnection()
     connect(socket, SIGNAL(disconnected()), socket, SLOT(deleteLater()));
 }
 
+//過濾新連線
 void MainWindow::readyRead()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
@@ -448,6 +462,7 @@ void MainWindow::cleanDoneList()
     }
 }
 
+//將DoneList 寫入Log
 void MainWindow::DoneTaskToLog()
 {
 #if defined(Q_OS_MACOS)
@@ -469,6 +484,7 @@ void MainWindow::DoneTaskToLog()
 #endif
 }
 
+//更新TableWidget
 void MainWindow::updateAllTableWidget()
 {
     updateWaitingTable();
@@ -476,6 +492,7 @@ void MainWindow::updateAllTableWidget()
     updateDoneTable();
 }
 
+//更新TableWidget
 void MainWindow::updateWaitingTable()
 {
     ui->tableWidget_Waiting->setRowCount(0);
@@ -498,6 +515,7 @@ void MainWindow::updateWaitingTable()
     }
 }
 
+//更新TableWidget
 void MainWindow::updateInActionTable()
 {
     ui->tableWidget_InAction->setRowCount(0);
@@ -520,6 +538,7 @@ void MainWindow::updateInActionTable()
     }
 }
 
+//更新TableWidget
 void MainWindow::updateDoneTable()
 {
     ui->tableWidget_Done->setRowCount(0);
@@ -543,6 +562,7 @@ void MainWindow::updateDoneTable()
     }
 }
 
+//開始按鈕觸發
 void MainWindow::on_Button_Start_clicked()
 {
     if(systemState == START)
@@ -599,6 +619,7 @@ void MainWindow::on_Button_Start_clicked()
     qDebug() << "emit systemStart()";
 }
 
+//停止按鈕觸發
 void MainWindow::on_Button_Stop_clicked()
 {
     if(systemState == STOP)
@@ -608,6 +629,7 @@ void MainWindow::on_Button_Stop_clicked()
     qDebug() << "emit systemStop()";
 }
 
+//檢查各裝置的連線狀態
 bool MainWindow::checkDeviceAllConnected()
 {
     //檢查手臂連線狀態

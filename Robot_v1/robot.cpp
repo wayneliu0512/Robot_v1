@@ -5,7 +5,6 @@
 #include "task.h"
 #include "base.h"
 #include "mainwindow.h"
-#include <QTimer>
 #include <QMessageBox>
 #include <QXmlStreamAttributes>
 #include <QDebug>
@@ -57,6 +56,7 @@ void Robot::connectToRobot()
     communication->connectToHost();
 }
 
+//執行任務
 void Robot::excuteTask(const Task &_task)
 {
     if(_task.command == Task::TO_SCAN_SN)
@@ -74,8 +74,6 @@ void Robot::excuteTask(const Task &_task)
     }else if(_task.command == Task::TO_SCAN_MAC)
     {
         updateState(INACTION);
-
-//        QString from = transFromIndex(_task.deviceNumber);
 
         QXmlStreamAttributes attributes;
         attributes.append("ID", _task.ID);

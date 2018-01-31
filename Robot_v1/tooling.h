@@ -31,8 +31,8 @@ public:
 
     void setToolingNumber(int _number);                                   //設置機箱位置號碼
     void setToolingSN(const QString _toolingSN){ toolingSN = _toolingSN; }//設置機箱序號
-    void setSocket(QTcpSocket *_socket);
-    void setLogPath(const QString &_path){ logPath = _path; }
+    void setSocket(QTcpSocket *_socket);                                  //設置socket
+    void setLogPath(const QString &_path){ logPath = _path; }             //設置Log存放路徑
 
     Communication *communication;
 signals:

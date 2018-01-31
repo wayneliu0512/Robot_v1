@@ -150,19 +150,10 @@ void Task::createAction(Action _action, int _deviceNumber)
 
         Task *taskTooling1 = new Task(Task::UPDATE_BASE, Task::ROBOT, 1);
 
-        // For UPDATESETTING , update trayMode
-//        Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
-//        settingTask->tray_mode = MainWindow::trayMode;
-//        taskTooling1->next(settingTask);
-
         if(MainWindow::toolingQuantity == 2)
         {
             Task *taskTooling2 = new Task(Task::UPDATE_BASE, Task::ROBOT, 2);
 
-            // For UPDATESETTING , update trayMode
-//            Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
-//            settingTask->tray_mode = MainWindow::trayMode;
-//            taskTooling1->next(taskTooling2)->next(settingTask);
             taskTooling1->next(taskTooling2);
 
         }else if(MainWindow::toolingQuantity > 2)
@@ -172,10 +163,6 @@ void Task::createAction(Action _action, int _deviceNumber)
             {
                 tempTask = tempTask->next(new Task(Task::UPDATE_BASE, Task::ROBOT, i + 3));
             }
-            // For UPDATESETTING , update trayMode
-//            Task *settingTask = new Task(Task::UPDATE_SETTING, Task::ROBOT);
-//            settingTask->tray_mode = MainWindow::trayMode;
-//            tempTask = tempTask->next(settingTask);
         }
         MainWindow::waitingList.prepend(taskTooling1);
     }else

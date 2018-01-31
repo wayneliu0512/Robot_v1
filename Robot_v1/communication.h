@@ -11,9 +11,9 @@ class Communication : public QWidget
     Q_OBJECT
 public:
 //    設定通訊協定
-    enum Protocol_ACK{ ACK, NO_ACK };
-    enum Protocol_HostClient{ CONNECT_TO_HOST, CONNECT_TO_CLIENT };
-    enum Protocol_Format{ XML, JSON, NONE};
+    enum Protocol_ACK{ ACK, NO_ACK };// 有 or 沒有Ack(回傳確認機制)
+    enum Protocol_HostClient{ CONNECT_TO_HOST, CONNECT_TO_CLIENT }; //連結到Server or Client
+    enum Protocol_Format{ XML, JSON, NONE};// 傳輸格式
 //    連線狀態
     enum State_Connection{ ONLINE, OFFLINE, ERROR };
 

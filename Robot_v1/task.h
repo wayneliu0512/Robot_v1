@@ -26,7 +26,7 @@ public:
 
     QString commandToString();
     QString deviceToString();
-//    連結下一個任務
+//    連結下一個任務,(return 自己)
     Task *next(Task *_nextTask);
 //    擷取出下一個任務
     Task *takeNextTask();

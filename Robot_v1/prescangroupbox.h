@@ -4,7 +4,7 @@
 #include <QMessageBox>
 
 /* GroupBox
-   機箱預刷系統, 每個機箱刷入項目：
+   機箱預刷GUI系統, 每個機箱刷入項目：
    1.Tooling    -> 機箱序號
    2.Base       -> Base序號
    3.ModuleBase -> 模組座序號
@@ -37,15 +37,11 @@ public slots:
     void ReKeyLineEdit(const LineEdit &_lineEdit);
 
 private slots:
-
+//    各個lineEdit觸發Enter鍵時
     void on_lineEdit_Tooling_returnPressed();
-
     void on_lineEdit_Base_returnPressed();
-
     void on_lineEdit_ModuleBase_returnPressed();
-
     void on_lineEdit_Module_returnPressed();
-
     void on_lineEdit_ElecBox_returnPressed();
 
 private:

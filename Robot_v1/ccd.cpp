@@ -14,13 +14,14 @@ Ccd::Ccd(QWidget *parent) :
 
     communication = new Communication(this, Communication::ACK, Communication::CONNECT_TO_CLIENT,
                                       Communication::JSON);
-
+//    將狀態連結燈號
     connect(communication, SIGNAL(online(QString)), ui->label_light, SLOT(OnlineLighting()));
     connect(communication, SIGNAL(offline()), ui->label_light, SLOT(OfflineLighting()));
     connect(communication, SIGNAL(error(QString)), ui->label_light, SLOT(ErrorLighting()));
     connect(this, SIGNAL(shooting()), ui->label_light, SLOT(excutingLighting()));
     connect(this, SIGNAL(waiting()), ui->label_light, SLOT(OnlineLighting()));
 
+//    連結communication,接收來自communication的訊息
     connect(communication, SIGNAL(receiveErrorDONE(QString)), this, SLOT(receiveError(QString)));
     connect(communication, SIGNAL(receiveDONE(QString)), this, SLOT(actionFinished()));
     connect(communication, SIGNAL(receiveSN(QString)), this, SLOT(receiveSN(QString)));
@@ -41,17 +42,21 @@ void Ccd::setSocket(QTcpSocket *_socket)
 void Ccd::receiveSN(const QString &_SN)
 {
     ui->label_SN->setText(_SN);
+//    將SN傳給對應機箱
     emit sendSN(_SN, ToolingNumber);
 }
 
 void Ccd::receiveMAC(const QString &_MAC)
 {
     ui->label_MAC->setText(_MAC);
+//    將MAC傳給對應機箱
     emit sendMAC(_MAC, ToolingNumber);
 }
 
+//接收發生錯誤的任務ID
 void Ccd::receiveError(const QString &_ID)
 {
+//    檢查執行中任務列表, 找出此錯誤的任務, 並將他後面鏈結的任務連結到SCAN_ERROR_TO_FAIL(掃描失敗, 夾取至Fail區)
     for(int i = 0; i < MainWindow::inActionList.length(); i++)
     {
         if(MainWindow::inActionList.at(i)->ID == _ID)
@@ -72,12 +77,13 @@ void Ccd::actionFinished()
     updateState(WAITING);
 }
 
+//執行任務
 void Ccd::excuteTask(const Task &_task)
 {
-
     if(_task.command == Task::START_SCAN)
     {
         ToolingNumber = _task.deviceNumber;
+//        傳送JSON給CCd
         communication->sendJSON(_task.ID, "Shot");
         updateState(SHOOTING);
     }else
@@ -86,6 +92,7 @@ void Ccd::excuteTask(const Task &_task)
     }
 }
 
+//更新CCd的狀態
 void Ccd::updateState(State _state)
 {
     switch(_state)

@@ -38,7 +38,7 @@ private:
     void readModuleSetting();
 //    分類入料區有幾種機種, 如果全部都是入料區1, 則把所有入料區切換成3
     void classifyElecBoxList();
-
+//    機箱數量
     int toolingQuantity;
 
 };

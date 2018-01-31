@@ -3,6 +3,9 @@
 
 #include <QWidget>
 
+/*Robot :
+    掌管有關手臂的任務處理
+*/
 class Communication;
 class Task;
 class Base;
@@ -38,9 +41,9 @@ signals:
     void addTask();
 public slots:
     void excuteTask(const Task &_task);// 接收並執行任務
-    void aboutToStop();
+    void aboutToStop();//停止執行任務
 private slots:
-    void actionFinished();
+    void actionFinished(); //手臂動作結束
 private:
     Ui::Robot *ui;
 
@@ -49,7 +52,6 @@ private:
     QString transFromIndex(int _deviceNum);//將from mode轉換成手臂的from 參數
     QString transToIndex(int _deviceNum);  //將from mode轉換成手臂的To參數
 
-    QTimer *timer;
     const QVector<Base> *baseList;
     const QVector<int> *elecBoxList;
 };

@@ -99,6 +99,7 @@ void DynamicSetting::readModuleSetting()
     QSettings moduleSetting("Module_Setting.ini", QSettings::IniFormat);
 }
 
+//調整Tooling3 位置的偏移量(目前沒有用到)
 void DynamicSetting::adjustTooling3Offset()
 {
     Base base = nowOffsetList->at(2);
@@ -107,6 +108,7 @@ void DynamicSetting::adjustTooling3Offset()
     nowOffsetList->replace(2, base);
 }
 
+//辨別目前是單機種 or 雙機種
 void DynamicSetting::classifyElecBoxList()
 {
     for(int i = 0; i < toolingQuantity; ++i)
@@ -126,6 +128,7 @@ void DynamicSetting::classifyElecBoxList()
     qDebug() << "ElecBoxList: one type mode";
 }
 
+//將offset 還原設定
 void DynamicSetting::backToOriginalSetting()
 {
     *nowOffsetList = *offsetList;
@@ -134,6 +137,7 @@ void DynamicSetting::backToOriginalSetting()
     classifyElecBoxList();
 }
 
+//更新Base_Setting.ini
 void DynamicSetting::updateSetting()
 {    
     QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);

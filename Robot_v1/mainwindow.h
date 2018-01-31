@@ -27,7 +27,9 @@ public:
 
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-
+//    等待中任務列表
+//    執行中任務列表
+//    執行完畢任務列表
     static QList<Task*> waitingList;
     static QList<Task*> inActionList;
     static QList<Task*> doneList;
@@ -46,6 +48,7 @@ protected:
     void closeEvent(QCloseEvent *event);
 
 signals:
+//    中控程式開始/停止
     void systemStart();
     void systemStop();
 
@@ -76,7 +79,7 @@ private:
     void createMenus();
 //    建立預刷視窗
     void createPreScanDialog();
-
+//    讀取設定檔
     void readSettingFile();
 //    初始化各設備
     void initialToolings();
