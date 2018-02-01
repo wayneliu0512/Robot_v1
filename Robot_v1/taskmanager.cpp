@@ -20,7 +20,7 @@ void TaskManager::run()
 {
     while(1)
     {
-//        這個動作可以大幅降低CPU使用率
+//        降低CPU使用率
         msleep(200);
 
         if(MainWindow::systemState == MainWindow::STOP)

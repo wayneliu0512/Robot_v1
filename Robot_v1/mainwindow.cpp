@@ -66,6 +66,12 @@ MainWindow::~MainWindow()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+    if(systemState != STOP)
+    {
+        QMessageBox::warning(this, "Warning", "Please Stop the system first.",QMessageBox::Cancel);
+        event->ignore();
+        return;
+    }
     if(QMessageBox::warning(this, "Warning", "Do you want to quit the application ?",
                             QMessageBox::Ok, QMessageBox::Cancel) == QMessageBox::Cancel)
     {

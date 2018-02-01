@@ -22,6 +22,7 @@ Tooling::Tooling(QWidget *parent) :
 
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
+//    將狀態連結燈號, msgBox
     connect(communication, SIGNAL(online(QString)), ui->label_light, SLOT(OnlineLighting()));
     connect(communication, SIGNAL(offline()), ui->label_light, SLOT(OfflineLighting()));
     connect(communication, SIGNAL(error(QString)), this, SLOT(errorManage(QString)));
@@ -33,6 +34,7 @@ Tooling::Tooling(QWidget *parent) :
     connect(this, SIGNAL(error(QString)), ui->label_State, SLOT(setText(QString)));
     connect(this, SIGNAL(error(QString)), ui->label_light, SLOT(ErrorLighting()));
 
+//    計時器初始化
     initializeClock();
     connect(&clockTimer, SIGNAL(timeout()), this, SLOT(clockUpdate()));
 
@@ -48,7 +50,7 @@ Tooling::~Tooling()
     delete ui;
 
 }
-
+//計時器初始化
 void Tooling::initializeClock()
 {
     clockTimer.stop();
@@ -57,7 +59,7 @@ void Tooling::initializeClock()
 
     ui->clock->display(clockTime.toString("mm:ss"));
 }
-
+//測試計時用
 void Tooling::clockUpdate()
 {
     clockTime = clockTime.addSecs(1);
@@ -84,6 +86,7 @@ void Tooling::setSocket(QTcpSocket *_socket)
     updateState(IDLE);
 }
 
+//接收單項測試結果
 void Tooling::receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult)
 {
     if(_testName == "Final")
@@ -93,9 +96,11 @@ void Tooling::receiveMessage(const QString &_testName, const int &_testStage, co
     {
         switch (_testStage) {
         case 0:
+//            接收到測試開始
             receive_TestStart(_testName);
             break;
         case 1:
+//            接收到測試結束
             receive_TestFinished(_testName, _testResult);
             break;
         default:
@@ -104,6 +109,7 @@ void Tooling::receiveMessage(const QString &_testName, const int &_testStage, co
     }
 }
 
+//接收整套測試完畢結果
 void Tooling::receive_AllTestFinished(const int &_testResult)
 {
     QString result;
@@ -118,9 +124,11 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
         result = "Fail";
     }
 
+//    更新Db
     insertDb("Final");
     updateDb("Final", result, 0);
 
+//    更新UI
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "End Test" << result);
     ui->treeWidget->insertTopLevelItem(0, item);
 
@@ -128,12 +136,16 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
     initializeClock();
 }
 
+//接收到測試開始
 void Tooling::receive_TestStart(const QString &_testName)
 {
     testStartTime = clockTime;
-    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing" << testStartTime.toString());
 
+//    更新UI
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing" << testStartTime.toString());
     ui->treeWidget->insertTopLevelItem(0, item);
+
+//    更新Db
     insertDb(_testName);
 }
 
@@ -161,6 +173,7 @@ void Tooling::insertDb(const QString &_testName)
 #endif
 }
 
+//接收到單項測試結束
 void Tooling::receive_TestFinished(const QString &_testName, const int &_testResult)
 {
     int testTime;
@@ -170,6 +183,7 @@ void Tooling::receive_TestFinished(const QString &_testName, const int &_testRes
     else
         result = "Fail";
 
+//    更新UI, Db
     for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
     {
         if(ui->treeWidget->topLevelItem(i)->text(0) == _testName)
@@ -205,6 +219,7 @@ void Tooling::updateDb(const QString &_testName, const QString &_result, int _te
 #endif
 }
 
+//更新同一序號重測次數到Db
 void Tooling::updateDbVersion()
 {
     //Check Db connection
@@ -231,6 +246,7 @@ void Tooling::updateDbVersion()
     qDebug() << "version2 : " << dbVersion;
 }
 
+//接收SN (from ccd)
 void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
 {
     if(_toolingNumber != toolingNumber)
@@ -241,6 +257,7 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
     getMoBySN(SN);
 }
 
+//取得Mo from WebService
 void Tooling::getMoBySN(const QString &_SN)
 {
     QString getUrl(MainWindow::webServiceUrl);
@@ -271,6 +288,7 @@ void Tooling::getMoBySN(const QString &_SN)
 
     QXmlStreamReader xmlReader(answer);
 
+//    解析XML
     while (!xmlReader.atEnd()) {
         xmlReader.readNext();
         if(xmlReader.isStartElement())
@@ -291,11 +309,13 @@ void Tooling::getMoBySN(const QString &_SN)
     {
         qCritical() << "Tooling::getMoBySN() / " << xmlReader.errorString();
     }
+
     MO = "N/A";
     PN = "N/A";
     return;
 }
 
+//接收MAC (from ccd)
 void Tooling::receiveMAC(const QString &_MAC, const int &_toolingNumber)
 {
     if(_toolingNumber != toolingNumber)
@@ -304,17 +324,20 @@ void Tooling::receiveMAC(const QString &_MAC, const int &_toolingNumber)
     ui->label_MAC->setText(MAC);
 }
 
+//傳送SN, MAC 到 Tooling_Client端
 void Tooling::sendToClient_SN_MAC()
 {
     QString sendData = SN + ";" + MAC;
     communication->send(sendData, toolingNumber);
 }
 
+//執行任務(狀態防呆, PS:降寫有點醜, 應該要改用狀態機寫比較優)
 void Tooling::excuteTask(const Task &_task)
 {
     if(_task.deviceNumber != toolingNumber)
         return;
-
+//    狀態防呆, 開始測試 -> if 第一次測試 -> TESTING   (一般測試狀態)
+//                         if 第二次測試 -> RE_TESTING(重測狀態)
     if(_task.command == Task::POWER_ON)
     {
         if(testTime == ZERO_TIME)
@@ -339,6 +362,9 @@ void Tooling::excuteTask(const Task &_task)
         updateDbVersion();
         emit excuteTaskByRobot(_task);
     }
+//    狀態防呆, 結束測試PASS -> IDLE
+//             結束測試FAIL -> if 第一次測試 -> RE_TESTING(重測狀態)
+//                            if 第二次測試 -> IDLE      (機台空閒狀態)
     else if(_task.command == Task::POWER_OFF)
     {
         if(state == TEST_FINISHED_PASS)
@@ -372,7 +398,7 @@ void Tooling::excuteTask(const Task &_task)
 
 }
 
-//有機會可以用狀態機作
+//更新狀態(狀態防呆, PS:降寫有點醜, 應該要改用狀態機寫比較優)
 bool Tooling::updateState(State _nextState)
 {
     switch (_nextState) {
@@ -465,6 +491,7 @@ bool Tooling::updateState(State _nextState)
     return true;
 }
 
+//紀錄 TestLog
 void Tooling::initialTestList()
 {
 #if defined(Q_OS_MAC)
