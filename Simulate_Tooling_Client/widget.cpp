@@ -1,12 +1,14 @@
 #include "widget.h"
 #include "ui_widget.h"
 #include <QNetworkInterface>
+#include <QMessageBox>
 
 Widget::Widget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::Widget)
 {
     ui->setupUi(this);
+    ui->groupBox->setVisible(false);
 
     socket = new QTcpSocket(this);
     connect(socket, SIGNAL(connected()), this, SLOT(connected()));
@@ -16,6 +18,7 @@ Widget::Widget(QWidget *parent) :
     connect(this, SIGNAL(output(QString)), ui->textBrowser, SLOT(append(QString)));
 
     initialLineEdit();
+
 }
 
 Widget::~Widget()
@@ -34,7 +37,7 @@ void Widget::initialLineEdit()
 void Widget::connected()
 {
     emit output("Connected.");
-    ui->lineEdit->setFocus();
+    ui->lineEdit_Command->setFocus();
     out.setDevice(socket);
     out.setVersion(QDataStream::Qt_5_7);
 }
@@ -50,12 +53,8 @@ void Widget::readyRead_socket()
     QString readData = socket->readAll();
 
     emit output("Receive << " + readData);
-}
 
-void Widget::on_pushButton_Send_clicked()
-{
-    QString str(ui->lineEdit->text());
-    sendJson(str);
+    if(readData == "H611NC2009;0030641A91EC" && ui->checkBox_AutoRun->isChecked()) autoRun();
 }
 
 void Widget::sendJson(const QString &_testName)
@@ -68,16 +67,42 @@ void Widget::sendJson(const QString &_testName)
     QJsonDocument jsonDoc(jsonObj);
 
     out << jsonDoc.toJson();
-//    QJsonObject jsonObj;
-//    jsonObj.insert("TestName", _testName);
-//    jsonObj.insert("TestStage", testStage);
-//    jsonObj.insert("TestResult", testResult);
-
-//    QJsonDocument jsonDoc(jsonObj);
-
-//    socket->write(jsonDoc.toJson());
 
     emit output("SendToSocket >> " + QString::fromUtf8(jsonDoc.toJson()));
+}
+
+void Widget::autoRun()
+{
+    QTimer::singleShot(ui->spinBox->value()*1000, this, SLOT(startFakeTest()));
+}
+
+void Widget::startFakeTest()
+{
+    if(ui->taskList->count() == 0)
+    {
+        QMessageBox::information(this, "Finished", "Tasks excute completed", QMessageBox::Cancel);
+    }else
+    {
+        QListWidgetItem *item = ui->taskList->takeItem(0);
+        if(item->text() == "Pass")
+        {
+            testStage = 1;
+            testResult = 1;
+        }else
+        {
+            testStage = 1;
+            testResult = 0;
+        }
+        sendJson("Final");
+        delete item;
+        item = nullptr;
+    }
+}
+
+void Widget::on_pushButton_Send_clicked()
+{
+    QString str(ui->lineEdit_Command->text());
+    sendJson(str);
 }
 
 void Widget::on_pushButton_Connect_clicked()
@@ -127,3 +152,33 @@ void Widget::on_comboBox_TestStage_activated(const QString &arg1)
         emit output("Error: ComboBox exception.");
     }
 }
+
+void Widget::on_checkBox_AutoRun_toggled(bool checked)
+{
+    if(checked)
+    {
+        ui->groupBox->setVisible(true);
+        ui->pushButton_Send->setEnabled(false);
+        ui->lineEdit_Command->setEnabled(false);
+        ui->comboBox_TestStage->setEnabled(false);
+        ui->label_3->setEnabled(false);
+    }else
+    {
+        ui->groupBox->setVisible(false);
+        ui->pushButton_Send->setEnabled(true);
+        ui->lineEdit_Command->setEnabled(true);
+        ui->comboBox_TestStage->setEnabled(true);
+        ui->label_3->setEnabled(true);
+    }
+}
+
+void Widget::on_pushButton_AddTask_clicked()
+{
+    ui->taskList->addItem(ui->comboBox_Result->currentText());
+}
+
+void Widget::on_pushButton_ClearList_clicked()
+{
+    ui->taskList->clear();
+}
+

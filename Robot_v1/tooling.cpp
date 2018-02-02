@@ -360,6 +360,9 @@ void Tooling::excuteTask(const Task &_task)
         clockTimer.start(1000);
         sendToClient_SN_MAC();
         updateDbVersion();
+//        更新Db
+        insertDb("Start");
+        updateDb("Start", "Pass", 0);
         emit excuteTaskByRobot(_task);
     }
 //    狀態防呆, 結束測試PASS -> IDLE

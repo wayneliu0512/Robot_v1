@@ -41,6 +41,14 @@ private slots:
 
     void on_comboBox_TestStage_activated(const QString &arg1);
 
+    void on_checkBox_AutoRun_toggled(bool checked);
+
+    void on_pushButton_AddTask_clicked();
+
+    void on_pushButton_ClearList_clicked();
+
+    void startFakeTest();
+
 private:
     Ui::Widget *ui;
 
@@ -55,6 +63,9 @@ private:
     void sendJson(const QString &_testName);
 
     void initialLineEdit();
+
+    void autoRun();
+
 };
 
 #endif // WIDGET_H
