@@ -38,11 +38,7 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
-#if defined(Q_OS_MACOS)
-    QDir dir("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/DebugLog");
-#elif defined(Q_OS_WIN)
     QDir dir("DebugLog");
-#endif
 
     if(!dir.exists())
     {
@@ -50,7 +46,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 //    安裝MessageHandler可以輸出QtDebug訊息
-    qInstallMessageHandler(myMessageHandler);
+//    qInstallMessageHandler(myMessageHandler);
 
     MainWindow w;
     w.show();

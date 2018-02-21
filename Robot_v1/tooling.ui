@@ -258,6 +258,21 @@
         </item>
        </layout>
       </item>
+      <item row="3" column="0" colspan="2">
+       <widget class="QPushButton" name="disconnectButton">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
+        <property name="font">
+         <font>
+          <family>Microsoft JhengHei UI</family>
+         </font>
+        </property>
+        <property name="text">
+         <string>Disconnect</string>
+        </property>
+       </widget>
+      </item>
      </layout>
     </widget>
    </item>

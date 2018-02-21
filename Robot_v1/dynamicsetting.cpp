@@ -32,11 +32,7 @@ void DynamicSetting::readBaseSetting()
     electrostaticBoxList->clear();
     electrostaticBoxList->resize(toolingQuantity);
 
-#if defined(Q_OS_MAC)
-    QSettings baseIni("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/Base_Setting.ini", QSettings::IniFormat);
-#elif defined(Q_OS_WIN)
     QSettings baseIni("Base_Setting.ini", QSettings::IniFormat);
-#endif
 
 //    讀取Base對應的入料區位置
     for(int i = 0; i < toolingQuantity; ++i)

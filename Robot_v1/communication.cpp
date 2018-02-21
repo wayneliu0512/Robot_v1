@@ -100,6 +100,13 @@ bool Communication::setSocket(QTcpSocket *_socket)
     return true;
 }
 
+void Communication::closeSocket()
+{
+    socket->close();
+    state_Connection = OFFLINE;
+    emit offline();
+}
+
 //將Read 資料, 配發至對應protocol
 void Communication::readyRead()
 {
@@ -343,7 +350,6 @@ void Communication::socketError()
 {
     msgBox->setText("Error: Communication::socketError()\n" + socket->errorString());
     msgBox->show();
-
     state_Connection = ERROR;
     emit error("Socket error");
 }

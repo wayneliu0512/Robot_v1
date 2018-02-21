@@ -22,7 +22,7 @@ class Tooling : public QWidget
 
 public:
 //    對於機箱, 只會在這幾種狀態中, 依循規則的切換, 成為固定的流程, 利用這個規則可以確保流程是正確的
-    enum State{ CONNECTED, IDLE, RE_TEST, TESTING, RE_TESTING, TEST_FINISHED_PASS, TEST_FINISHED_FAIL, ERROR};
+    enum State{ CONNECTED, IDLE, RE_TEST, TESTING, RE_TESTING, TEST_FINISHED_PASS, TEST_FINISHED_FAIL, ERROR };
 //    機箱測試的次數, 最多測兩次
     enum TestTime{ ZERO_TIME, FIRST_TIME, SECOND_TIME };
 
@@ -35,6 +35,7 @@ public:
     void setLogPath(const QString &_path){ logPath = _path; }             //設置Log存放路徑
 
     Communication *communication;
+
 signals:
     void addTask();// 新增任務
 
@@ -45,6 +46,10 @@ signals:
     void testFinished();//機台測試結束
     void reTest();      //機台重新測試
     void reTesting();   //機台重新測試中
+
+    void receiveACK(const QString &id);
+    void receiveDONE(const QString &id);
+    void waiting();
 
     void error(const QString &_str);
 public slots:
@@ -57,6 +62,9 @@ private slots:
     //接收來自機箱的訊息
     void receiveMessage(const QString &_testName, const int &_testStage, const int &_testResult);
     void clockUpdate();//測試計時用
+
+    void on_disconnectButton_clicked();
+
 private:
     Ui::Tooling *ui;
 //    初始化計時器跟測試清單
@@ -82,6 +90,9 @@ private:
     void updateDb(const QString &_testName, const QString &_result, int _testTime);
     void updateDbVersion();
 
+    void toolDisconnect();
+
+
     State state = CONNECTED;        //機台狀態
     TestTime testTime = ZERO_TIME;  //機台測試次數
     QString toolingSN;              //機台序號
@@ -94,6 +105,7 @@ private:
     QString logPath;
     QStringList testItemList;
     QMessageBox messageBox;
+    bool disconnectFlag=false;
 };
 
 #endif // TOOLING_H

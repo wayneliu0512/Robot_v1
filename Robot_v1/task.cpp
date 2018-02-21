@@ -70,6 +70,8 @@ QString Task::commandToString()
         return "UpdateBase";
     case UPDATE_SETTING:
         return "UpdateSetting";
+    case TOOL_DISCONNECTING:
+        return "ToolDisconnect";
     default:
         qCritical() << "Error: Task::commandToString()";
         return "NULL";
@@ -146,7 +148,8 @@ void Task::createAction(Action _action, int _deviceNumber)
 
         MainWindow::waitingList.append(taskPowerOff);
 
-    }else if(_action == UPDATE_ALLSET){
+    }else if(_action == UPDATE_ALLSET)
+    {
 
         Task *taskTooling1 = new Task(Task::UPDATE_BASE, Task::ROBOT, 1);
 
@@ -165,7 +168,12 @@ void Task::createAction(Action _action, int _deviceNumber)
             }
         }
         MainWindow::waitingList.prepend(taskTooling1);
-    }else
+    }else if(_action == TOOL_DISCONNECT)
+    {
+        Task *taskDisconnect = new Task(Task::TOOL_DISCONNECTING, Task::TOOLING, _deviceNumber);
+        MainWindow::waitingList.append(taskDisconnect);
+    }
+    else
     {
         qCritical() << "Error: Task::createAction()  Case exception.";
     }

@@ -108,13 +108,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 //讀取設定檔
 void MainWindow::readSettingFile()
 {
-#if defined(Q_OS_MACOS)
-    QFile base_settngINI("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/Base_Setting.ini");
-    QFile module_setting("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/Module_Setting.ini");
-#elif defined(Q_OS_WIN)
     QFile base_settngINI("Base_Setting.ini");
     QFile module_setting("Module_Setting.ini");
-#endif
 
     if(!base_settngINI.exists()){
         QMessageBox::critical(this, "Read file Error", "Error: Couldn't find Base_Setting.ini.");
@@ -128,11 +123,7 @@ void MainWindow::readSettingFile()
         return;
     }
 
-#if defined(Q_OS_MACOS)
-    QSettings setting("/Users/wayneliu/Documents/Qt/build-Robot_v1-Desktop_Qt_5_8_0_clang_64bit-Release/Setting.ini", QSettings::IniFormat);
-#elif defined(Q_OS_WIN)
     QSettings setting("Setting.ini", QSettings::IniFormat);
-#endif
 
     if(setting.value("Option/Port") == QVariant())
     {
@@ -186,16 +177,14 @@ void MainWindow::readSettingFile()
         exit(1);
     }else{
         QString path = setting.value("Option/ToolingLogPath").toString();
-    #if defined(Q_OS_MACOS)
 
-    #elif defined(Q_OS_WIN)
         QDir dir(path);
         if(!dir.exists())
         {
             QMessageBox::critical(this, "Read file Error", "Error: We couldn't find" + path);
             exit(1);
         }
-    #endif
+
         toolingLogPath = path;
     }
 
@@ -206,16 +195,14 @@ void MainWindow::readSettingFile()
         exit(1);
     }else{
         QString path = setting.value("Option/RobotLogPath").toString();
-    #if defined(Q_OS_MACOS)
 
-    #elif defined(Q_OS_WIN)
         QDir dir(path);
         if(!dir.exists())
         {
             QMessageBox::critical(this, "Read file Error", "Error: We couldn't find" + path);
             exit(1);
         }
-    #endif
+
         robotLogPath = path;
     }
 
@@ -317,15 +304,14 @@ void MainWindow::initialToolings()
         tooling.at(i)->setLogPath(toolingLogPath);
         connect(tooling.at(i), SIGNAL(addTask()), this, SLOT(updateWaitingTable()));
         connect(tooling.at(i), SIGNAL(excuteTaskByRobot(Task)), ui->robot, SLOT(excuteTask(Task)));
-
+        connect(tooling.at(i), SIGNAL(receiveACK(QString)), this, SLOT(moveTask_Wait_To_InAciton(QString)));
+        connect(tooling.at(i), SIGNAL(receiveDONE(QString)), this, SLOT(moveTask_InAction_To_Done(QString)));
         if(i%3 == 0)
              n++;
 
         toolingGridLayout->addWidget(tooling.at(i), n, i%3, 1, 1);
     }
     ui->scrollAreaWidgetContents->setLayout(toolingGridLayout);
-
-   // 加入 scrollBar
 }
 
 //創建Robot
@@ -364,6 +350,7 @@ void MainWindow::initialTaskManager()
     for(int i = 0; i < toolingQuantity; i++)
     {
         connect(taskManager, SIGNAL(excuteToolingTask(Task)), tooling.at(i), SLOT(excuteTask(Task)));
+        connect(tooling.at(i), SIGNAL(waiting()), taskManager, SLOT(systemActionFinished()));
     }
 
     connect(taskManager, SIGNAL(excuteRobotTask(Task)), ui->robot, SLOT(excuteTask(Task)));
@@ -423,7 +410,7 @@ void MainWindow::readyRead()
     {
         qWarning() << "MainWindow::readyRead() exception read << " + stringFromClient;
         disconnect(socket, SIGNAL(readyRead()), this, SLOT(readyRead()));
-        delete socket;
+        socket->deleteLater();
     }
 }
 
@@ -471,8 +458,6 @@ void MainWindow::cleanDoneList()
 //將DoneList 寫入Log
 void MainWindow::DoneTaskToLog()
 {
-#if defined(Q_OS_MACOS)
-#elif defined(Q_OS_WIN)
     Task *task = doneList.last();
     QFile logFile(robotLogPath + "\\" + QDate::currentDate().toString(Qt::ISODate) + "_RobotLog.log");
     if(logFile.exists())
@@ -487,7 +472,6 @@ void MainWindow::DoneTaskToLog()
         << "Command      : " << task->commandToString() << endl
         << "ToolingNumber: " << QString::number(task->deviceNumber) << endl
         << "-------------------------------------------------------" << endl;
-#endif
 }
 
 //更新TableWidget

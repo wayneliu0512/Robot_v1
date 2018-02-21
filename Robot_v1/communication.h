@@ -25,6 +25,7 @@ public:
 
     void setPortIP(int _port, const QString &_IP);
     bool setSocket(QTcpSocket *_socket);
+    void closeSocket();
 //    連線到Server
     void connectToHost();
 //    傳送介面

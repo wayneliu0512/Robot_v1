@@ -101,6 +101,7 @@ void Client::reConnectTimeout()
     if (socket->waitForConnected(1000))
     {
         qDebug("Socket connected to host.");
+        out.setDevice(socket);
         timerForReConnect->stop();
     }else
     {

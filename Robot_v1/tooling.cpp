@@ -26,7 +26,6 @@ Tooling::Tooling(QWidget *parent) :
     connect(communication, SIGNAL(online(QString)), ui->label_light, SLOT(OnlineLighting()));
     connect(communication, SIGNAL(offline()), ui->label_light, SLOT(OfflineLighting()));
     connect(communication, SIGNAL(error(QString)), this, SLOT(errorManage(QString)));
-    connect(communication, SIGNAL(error(QString)), this, SLOT(errorManage(QString)));
     connect(this, SIGNAL(idle()), ui->label_light, SLOT(OnlineLighting()));
     connect(this, SIGNAL(testing()), ui->label_light, SLOT(excutingLighting()));
     connect(this, SIGNAL(reTesting()), ui->label_light, SLOT(excutingLighting()));
@@ -125,8 +124,8 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
     }
 
 //    更新Db
-    insertDb("Final");
-    updateDb("Final", result, 0);
+//    insertDb("Final");
+//    updateDb("Final", result, 0);
 
 //    更新UI
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "End Test" << result);
@@ -146,15 +145,11 @@ void Tooling::receive_TestStart(const QString &_testName)
     ui->treeWidget->insertTopLevelItem(0, item);
 
 //    更新Db
-    insertDb(_testName);
+//    insertDb(_testName);
 }
 
 void Tooling::insertDb(const QString &_testName)
 {
-#if defined(Q_OS_MACOS)
-
-#elif defined(Q_OS_WIN)
-
     //Check Db connection
     QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
     db.setDatabaseName(dsn);
@@ -170,7 +165,6 @@ void Tooling::insertDb(const QString &_testName)
         qCritical() << "Db insert error.";
 
     db.close();
-#endif
 }
 
 //接收到單項測試結束
@@ -191,16 +185,13 @@ void Tooling::receive_TestFinished(const QString &_testName, const int &_testRes
             testTime = QTime::fromString(ui->treeWidget->topLevelItem(i)->text(2)).secsTo(clockTime);
             ui->treeWidget->topLevelItem(i)->setText(1, result);
             ui->treeWidget->topLevelItem(i)->setText(3, QString::number(testTime));
-            updateDb(_testName, result, testTime);
+//            updateDb(_testName, result, testTime);
         }
     }
 }
 
 void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
 {
-#if defined(Q_OS_MACOS)
-
-#elif defined(Q_OS_WIN)
     QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
                                 .arg(_result).arg(_testTime).arg(SN).arg(_testName);
 
@@ -216,7 +207,6 @@ void Tooling::updateDb(const QString &_testName, const QString &_result, int _te
         qCritical() << "Db update error.";
 
     db.close();
-#endif
 }
 
 //更新同一序號重測次數到Db
@@ -244,6 +234,32 @@ void Tooling::updateDbVersion()
     else
         ++dbVersion;
     qDebug() << "version2 : " << dbVersion;
+}
+
+void Tooling::toolDisconnect()
+{
+    MainWindow::systemState = MainWindow::STOP;
+
+    //斷線
+    if(communication->state_Connection == Communication::ONLINE)
+    {
+        communication->closeSocket();
+    }
+    ui->label_State->setText("Offline");
+    ui->label_light->OfflineLighting();
+    state = CONNECTED;
+
+    //刪除等待列表中此機箱的所有任務
+    for(int i=0; i < MainWindow::waitingList.size(); ++i)
+    {
+        if(MainWindow::waitingList.at(i)->deviceNumber == toolingNumber)
+        {
+            Task *task = MainWindow::waitingList.takeAt(i);
+            task->deleteNextAll();
+        }
+    }
+    QMessageBox::information(this, "info", "Tooling "+ QString::number(toolingNumber) +" is ready to move.", QMessageBox::Cancel);
+    disconnectFlag = false;
 }
 
 //接收SN (from ccd)
@@ -334,8 +350,7 @@ void Tooling::sendToClient_SN_MAC()
 //執行任務(狀態防呆, PS:降寫有點醜, 應該要改用狀態機寫比較優)
 void Tooling::excuteTask(const Task &_task)
 {
-    if(_task.deviceNumber != toolingNumber)
-        return;
+    if(_task.deviceNumber != toolingNumber) return;
 //    狀態防呆, 開始測試 -> if 第一次測試 -> TESTING   (一般測試狀態)
 //                         if 第二次測試 -> RE_TESTING(重測狀態)
     if(_task.command == Task::POWER_ON)
@@ -343,14 +358,12 @@ void Tooling::excuteTask(const Task &_task)
         if(testTime == ZERO_TIME)
         {
             testTime = FIRST_TIME;
-            if(!updateState(TESTING))
-                return;
+            if(!updateState(TESTING)) return;
         }
         else if(testTime == FIRST_TIME)
         {
             testTime = SECOND_TIME;
-            if(!updateState(RE_TESTING))
-                return;
+            if(!updateState(RE_TESTING)) return;
         }
         else
         {
@@ -359,10 +372,10 @@ void Tooling::excuteTask(const Task &_task)
         }
         clockTimer.start(1000);
         sendToClient_SN_MAC();
-        updateDbVersion();
+//        updateDbVersion();
 //        更新Db
-        insertDb("Start");
-        updateDb("Start", "Pass", 0);
+//        insertDb("Start");
+//        updateDb("Start", "Pass", 0);
         emit excuteTaskByRobot(_task);
     }
 //    狀態防呆, 結束測試PASS -> IDLE
@@ -372,19 +385,16 @@ void Tooling::excuteTask(const Task &_task)
     {
         if(state == TEST_FINISHED_PASS)
         {
-            if(!updateState(IDLE))
-                return;
+            if(!updateState(IDLE)) return;
         }
         else if(state == TEST_FINISHED_FAIL)
         {
             if(testTime == FIRST_TIME)
             {
-                if(!updateState(RE_TEST))
-                    return;
+                if(!updateState(RE_TEST)) return;
             }else if(testTime == SECOND_TIME)
             {
-                if(!updateState(IDLE))
-                    return;
+                if(!updateState(IDLE)) return;
             }else
             {
                 qCritical() << "Error: Tooling::excuteTask()/Task::POWER_OFF/TEST_FINISHED  Case exception error.";
@@ -398,7 +408,14 @@ void Tooling::excuteTask(const Task &_task)
         }
         emit excuteTaskByRobot(_task);
     }
-
+    else if(_task.command == Task::TOOL_DISCONNECTING)
+    {
+        if(state == IDLE || state == RE_TEST)   toolDisconnect();
+        emit receiveACK(_task.ID);
+        emit receiveDONE(_task.ID);
+        emit waiting();
+        emit addTask();
+    }
 }
 
 //更新狀態(狀態防呆, PS:降寫有點醜, 應該要改用狀態機寫比較優)
@@ -415,10 +432,18 @@ bool Tooling::updateState(State _nextState)
             return false;
         }
 
-        testTime = ZERO_TIME;
+        if(disconnectFlag)
+        {
+            Task::createAction(Task::TOOL_DISCONNECT, toolingNumber);
+        }else
+        {
+            ui->disconnectButton->setEnabled(true);
+            testTime = ZERO_TIME;
+            Task::createAction(Task::GET_DUT_TO_TEST, toolingNumber);
+        }
+
         emit idle();
         ui->label_State->setText("Idle");
-        Task::createAction(Task::GET_DUT_TO_TEST, toolingNumber);
         emit addTask();
 
         break;
@@ -439,6 +464,7 @@ bool Tooling::updateState(State _nextState)
         }
         emit testFinished();
         ui->label_State->setText("TestFinished");
+
         Task::createAction(Task::TEST_FINISHED_TO_PASS, toolingNumber);
         emit addTask();
 
@@ -497,9 +523,6 @@ bool Tooling::updateState(State _nextState)
 //紀錄 TestLog
 void Tooling::initialTestList()
 {
-#if defined(Q_OS_MAC)
-
-#elif defined(Q_OS_WIN)
     QFile logFile(logPath + "\\" + SN + ".log");
     logFile.open(QIODevice::WriteOnly | QIODevice::Text);
     QTextStream out(&logFile);
@@ -512,7 +535,7 @@ void Tooling::initialTestList()
         out << "Test item:" << ui->treeWidget->topLevelItem(i)->text(0)
             << "\tResult:" << ui->treeWidget->topLevelItem(i)->text(1)
             << "\tSpend time:" << ui->treeWidget->topLevelItem(i)->text(3) << "(sec)" << endl;
-#endif
+
     ui->treeWidget->clear();
 }
 
@@ -523,4 +546,10 @@ void Tooling::errorManage(const QString &_str)
     qCritical() << _str;
     state = ERROR;
     emit error(_str);
+}
+
+void Tooling::on_disconnectButton_clicked()
+{
+    disconnectFlag = true;
+    ui->disconnectButton->setEnabled(false);
 }
