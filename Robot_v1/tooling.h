@@ -27,10 +27,10 @@ public:
 //    機箱測試的次數, 最多測兩次
     enum TestTime{ ZERO_TIME, FIRST_TIME, SECOND_TIME };
 
-    explicit Tooling(QWidget *parent = 0);
+    explicit Tooling(QWidget *parent = 0, int _toolingNum = 0);
     ~Tooling();
 
-    void setToolingNumber(int _number);                                   //設置機箱位置號碼
+//    void setToolingNumber(int _number);                                   //設置機箱位置號碼
     void setToolingSN(const QString _toolingSN){ toolingSN = _toolingSN; }//設置機箱序號
     void setSocket(QTcpSocket *_socket);                                  //設置socket
     void setLogPath(const QString &_path){ logPath = _path; }             //設置Log存放路徑
@@ -87,9 +87,6 @@ private:
     void getMoBySN(const QString &_SN);
 
 //    上傳Db, 測試開始時 insert, 測試結束時 update 相對應的測試項目
-//    void insertDb(const QString &_testName);
-//    void updateDb(const QString &_testName, const QString &_result, int _testTime);
-//    void updateDbVersion();
     bool updateTestUI(const QString &_testName, const QString &_status);
     void addTestUI(const QString &_testName, const QString &_status);
 
@@ -100,7 +97,6 @@ private:
     TestTime testTime = ZERO_TIME;  //機台測試次數
     QString toolingSN;              //機台序號
     int toolingNumber;              //機台位置編號
-//    QString dsn;                    //DB 使用的Dsn碼
     int dbVersion = 0;              //DB 使用的Version
     int currentCycleSec = 0;
     QTimer clockTimer;

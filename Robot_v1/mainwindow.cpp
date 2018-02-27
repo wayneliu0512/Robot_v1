@@ -299,8 +299,7 @@ void MainWindow::initialToolings()
     int n = 0;
     for(int i = 0; i < toolingQuantity; i++)
     {
-        tooling.append(new Tooling(this));
-        tooling.at(i)->setToolingNumber(i+1);
+        tooling.append(new Tooling(this, i+1));
         tooling.at(i)->setLogPath(toolingLogPath);
         connect(tooling.at(i), SIGNAL(addTask()), this, SLOT(updateWaitingTable()));
         connect(tooling.at(i), SIGNAL(excuteTaskByRobot(Task)), ui->robot, SLOT(excuteTask(Task)));

@@ -14,12 +14,14 @@
 #include <QSqlError>
 #include <QSqlQuery>
 
-Tooling::Tooling(QWidget *parent) :
+Tooling::Tooling(QWidget *parent, int _toolingNum) :
     QWidget(parent),
+    toolingNumber(_toolingNum),
     ui(new Ui::Tooling)
-{
+{    
     ui->setupUi(this);
-//    dsn = QString("DRIVER={SQL Server};SERVER=%1;UID=sa;PWD=a123456;DATABASE=SmartFactory").arg(MainWindow::dbUrl);
+    ui->groupBox->setTitle("Tooling" + QString::number(toolingNumber));
+
     database = new Database(this, QString::number(toolingNumber), MainWindow::dbUrl);
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
@@ -68,12 +70,6 @@ void Tooling::clockUpdate()
     ui->clock->display(clockText);
 }
 
-void Tooling::setToolingNumber(int _number)
-{
-    toolingNumber = _number;
-    ui->groupBox->setTitle("Tooling" + QString::number(_number));
-}
-
 void Tooling::setSocket(QTcpSocket *_socket)
 {
     if(!communication->setSocket(_socket))
@@ -119,10 +115,11 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
             return;
         result = "Fail";
     }
-
+//    更新UI
     addTestUI("End test", result);
-    database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Final",dbVersion);
-    database->update(result, 0, SN, "Final",dbVersion, 0);
+//    更新Db
+//    database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Final",dbVersion);
+//    database->update(result, 0, SN, "Final",dbVersion, 0);
 
     initialTestList();
     initializeClock();
@@ -131,12 +128,16 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
 //接收到測試開始
 void Tooling::receive_TestStart(const QString &_testName)
 {
+//    更新UI
     if (updateTestUI(_testName, "testing")) {
-        int reTest = database->getReTest(SN, _testName, dbVersion);
-        database->update("testing", currentCycleSec, SN, _testName, dbVersion, ++reTest);
+//        更新Db
+//        int reTest = database->getReTest(SN, _testName, dbVersion);
+//        database->update("testing", currentCycleSec, SN, _testName, dbVersion, ++reTest);
     } else {
-            addTestUI(_testName, "testing");
-            database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, _testName, dbVersion);
+//        更新UI
+        addTestUI(_testName, "testing");
+//        更新Db
+//        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, _testName, dbVersion);
     }
 }
 
@@ -148,77 +149,14 @@ void Tooling::receive_TestFinished(const QString &_testName, const int &_testRes
         result = "Pass";
     else
         result = "Fail";
-
+//    更新UI
     updateTestUI(_testName, result);
+//    更新Db
     int reTest = database->getReTest(SN, _testName, dbVersion);
     database->update(result, currentCycleSec, SN, _testName, dbVersion, reTest);
 }
 
-//void Tooling::insertDb(const QString &_testName)
-//{
-//    //Check Db connection
-//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-//    db.setDatabaseName(dsn);
-//    if(!db.open())
-//        qCritical() << "Db open fail: " << db.lastError().text();
-
-//    //Insert data to Db
-//    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn, Version) "
-//                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120), '%8')")
-//                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(dbVersion);
-//    QSqlQuery sq(db);
-//    if(!sq.exec(cmdInsert))
-//        qCritical() << "Db insert error.";
-
-//    db.close();
-//}
-
-//void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
-//{
-//    QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
-//                                .arg(_result).arg(_testTime).arg(SN).arg(_testName);
-
-//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-//    db.setDatabaseName(dsn);
-
-//    if(!db.open())
-//        qCritical() << "Db open fail: " << db.lastError().text();
-
-//    QSqlQuery sq(db);
-
-//    if(!sq.exec(cmdUpdate))
-//        qCritical() << "Db update error.";
-
-//    db.close();
-//}
-
-//更新同一序號重測次數到Db
-//void Tooling::updateDbVersion()
-//{
-//    //Check Db connection
-//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-//    db.setDatabaseName(dsn);
-//    if(!db.open())
-//        qCritical() << "Db open fail: " << db.lastError().text();
-
-//    //Get Max Version of test on Db
-//    QString cmdSelect = QString("select MAX(Version) from RobotDashboard where SN = '%1'").arg(SN);
-//    QSqlQuery sq(db);
-//    if(!sq.exec(cmdSelect))
-//        qCritical() << "Db select error.";
-
-//    //if Max Version = NULL, Version = 1, First time insert
-//    //if Max Version != NULL, update version, ++Version
-//    sq.next();
-//    dbVersion = sq.value(0).toInt();
-//    qDebug() << "version1 : " << dbVersion;
-//    if(dbVersion==0)
-//        dbVersion=1;
-//    else
-//        ++dbVersion;
-//    qDebug() << "version2 : " << dbVersion;
-//}
-
+//機台離線
 void Tooling::toolDisconnect()
 {
 //    MainWindow::systemState = MainWindow::STOP;
@@ -317,6 +255,7 @@ void Tooling::getMoBySN(const QString &_SN)
     return;
 }
 
+//更新UI, 刷新已存在的測試項
 bool Tooling::updateTestUI(const QString &_testName, const QString &_status)
 {
     for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
@@ -332,6 +271,7 @@ bool Tooling::updateTestUI(const QString &_testName, const QString &_status)
     return false;
 }
 
+//更新UI, 加入新的測試項
 void Tooling::addTestUI(const QString &_testName, const QString &_status)
 {
     QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << _status << clockTime.toString());
@@ -380,13 +320,11 @@ void Tooling::excuteTask(const Task &_task)
         clockTimer.start(1000);
         sendToClient_SN_MAC();
 //        更新Db
-        dbVersion = database->getMaxVersion(SN);
-        ++dbVersion;
-        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Start", dbVersion);
-        database->update("Pass", 0, SN, "Start", dbVersion, 0);
-//        updateDbVersion();
-//        insertDb("Start");
-//        updateDb("Start", "Pass", 0);
+//        dbVersion = database->getMaxVersion(SN);
+//        ++dbVersion;
+//        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Start", dbVersion);
+//        database->update("Pass", 0, SN, "Start", dbVersion, 0);
+
         emit excuteTaskByRobot(_task);
     }
 //    狀態防呆, 結束測試PASS -> IDLE
