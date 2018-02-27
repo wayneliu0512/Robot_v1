@@ -11,6 +11,7 @@
 class Communication;
 class QTcpSocket;
 class Task;
+class Database;
 
 namespace Ui {
 class Tooling;
@@ -86,9 +87,11 @@ private:
     void getMoBySN(const QString &_SN);
 
 //    上傳Db, 測試開始時 insert, 測試結束時 update 相對應的測試項目
-    void insertDb(const QString &_testName);
-    void updateDb(const QString &_testName, const QString &_result, int _testTime);
-    void updateDbVersion();
+//    void insertDb(const QString &_testName);
+//    void updateDb(const QString &_testName, const QString &_result, int _testTime);
+//    void updateDbVersion();
+    bool updateTestUI(const QString &_testName, const QString &_status);
+    void addTestUI(const QString &_testName, const QString &_status);
 
     void toolDisconnect();
 
@@ -97,14 +100,16 @@ private:
     TestTime testTime = ZERO_TIME;  //機台測試次數
     QString toolingSN;              //機台序號
     int toolingNumber;              //機台位置編號
-    QString dsn;                    //DB 使用的Dsn碼
+//    QString dsn;                    //DB 使用的Dsn碼
     int dbVersion = 0;              //DB 使用的Version
+    int currentCycleSec = 0;
     QTimer clockTimer;
     QTime clockTime, testStartTime;
     QString SN, MAC, MO, PN;
     QString logPath;
     QStringList testItemList;
     QMessageBox messageBox;
+    Database *database;
     bool disconnectFlag=false;
 };
 

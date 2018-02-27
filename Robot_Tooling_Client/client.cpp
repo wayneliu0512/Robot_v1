@@ -92,7 +92,7 @@ void Client::disconnected()
     qDebug() << "Disconnected!(Socket)";
     timerCounter = 0;
     timer->stop();
-    timerForReConnect->start();
+//    timerForReConnect->start();
 }
 
 void Client::reConnectTimeout()
@@ -281,13 +281,13 @@ bool Client::controlWAutoMESProgram_PASS()
     MAC1.toWCharArray(MAC1_char);
 
     //Count AutoMES resultText length
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
+    AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
+    AU3_ControlGetText(L"Auto Shopfloor System v1.0.11", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:5]", catcher, 10000);
     int count = QString::fromWCharArray(catcher).length();
 
     //Serial Number textbox
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlFocus(L"Auto Shopfloor System v1.0.9", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:3]");
+    AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
+    AU3_ControlFocus(L"Auto Shopfloor System v1.0.11", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:7]");
     AU3_Send(SN_Enter_char);
 
     //Click MessageBox
@@ -302,8 +302,8 @@ bool Client::controlWAutoMESProgram_PASS()
 
     //Count AutoMES resultText length
     QThread::sleep(2);
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
+    AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
+    AU3_ControlGetText(L"Auto Shopfloor System v1.0.11", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:5]", catcher, 10000);
 
     //Check AutoMES resultText
     if(QString::fromWCharArray(catcher).length() > count)
@@ -315,71 +315,71 @@ bool Client::controlWAutoMESProgram_PASS()
     }
 }
 //FAIL過後藉由AutoMES 過站
-void Client::controlWAutoMESProgram_FAIL()
-{
-    WCHAR catcher[10000] = {0};
-    WCHAR SN_char[100] = {0};
-    WCHAR MAC1_char[100] = {0};
-    WCHAR SN_Enter_char[100] = {0};
-    WCHAR MAC1_Quantity_char[100] = {0};
+//void Client::controlWAutoMESProgram_FAIL()
+//{
+//    WCHAR catcher[10000] = {0};
+//    WCHAR SN_char[100] = {0};
+//    WCHAR MAC1_char[100] = {0};
+//    WCHAR SN_Enter_char[100] = {0};
+//    WCHAR MAC1_Quantity_char[100] = {0};
 
-    QString MAC1_Quantity = "1";
-    MAC1_Quantity.toWCharArray(MAC1_Quantity_char);
+//    QString MAC1_Quantity = "1";
+//    MAC1_Quantity.toWCharArray(MAC1_Quantity_char);
 
-    QString SN_Enter = SN + "{ENTER}";
-    SN_Enter.toWCharArray(SN_Enter_char);
+//    QString SN_Enter = SN + "{ENTER}";
+//    SN_Enter.toWCharArray(SN_Enter_char);
 
-    SN.toWCharArray(SN_char);
-    MAC1.toWCharArray(MAC1_char);
+//    SN.toWCharArray(SN_char);
+//    MAC1.toWCharArray(MAC1_char);
 
-    //Count AutoMES resultText length
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
-    int count = QString::fromWCharArray(catcher).length();
+//    //Count AutoMES resultText length
+//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
+//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
+//    int count = QString::fromWCharArray(catcher).length();
 
-    //Serial Number textbox
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlFocus(L"Auto Shopfloor System v1.0.9", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:3]");
-    AU3_Send(SN_Enter_char);
+//    //Serial Number textbox
+//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
+//    AU3_ControlFocus(L"Auto Shopfloor System v1.0.9", L"", L"[CLASS:ThunderRT6TextBox; INSTANCE:3]");
+//    AU3_Send(SN_Enter_char);
 
-    //Click MessageBox
-    QThread::sleep(2);
-    if(AU3_WinActivate(L"Message", L"") != 0)
-    {
-        AU3_ControlClick(L"Message", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
+//    //Click MessageBox
+//    QThread::sleep(2);
+//    if(AU3_WinActivate(L"Message", L"") != 0)
+//    {
+//        AU3_ControlClick(L"Message", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
 
-        //MAC ID quantity textbox
-        QThread::sleep(2);
-        AU3_WinActivate(L"Manual brush bad", L"");
-        AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_Quantity_char);
-        AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
+//        //MAC ID quantity textbox
+//        QThread::sleep(2);
+//        AU3_WinActivate(L"Manual brush bad", L"");
+//        AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_Quantity_char);
+//        AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
 
-        //MAC ID textbox
-        QThread::sleep(2);
-        AU3_WinActivate(L"Manual brush bad", L"");
-        AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_char);
-        AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
-    }
+//        //MAC ID textbox
+//        QThread::sleep(2);
+//        AU3_WinActivate(L"Manual brush bad", L"");
+//        AU3_ControlSetText(L"Manual brush bad", L"", L"[CLASS:Edit; INSTANCE:1]", MAC1_char);
+//        AU3_ControlClick(L"Manual brush bad", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
+//    }
 
-    //ERROR Code textbox
-    QThread::sleep(2);
-    AU3_WinActivate(L"Manual scan error code.", L"");
-    AU3_ControlSetText(L"Manual scan error code.", L"", L"[CLASS:Edit; INSTANCE:1]", SN_char);
-    AU3_ControlClick(L"Manual scan error code.", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
+//    //ERROR Code textbox
+//    QThread::sleep(2);
+//    AU3_WinActivate(L"Manual scan error code.", L"");
+//    AU3_ControlSetText(L"Manual scan error code.", L"", L"[CLASS:Edit; INSTANCE:1]", SN_char);
+//    AU3_ControlClick(L"Manual scan error code.", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
 
-    //Count AutoMES resultText length
-    QThread::sleep(2);
-    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
-    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
+//    //Count AutoMES resultText length
+//    QThread::sleep(2);
+//    AU3_WinActivate(L"Auto Shopfloor System v1.0.9", L"");
+//    AU3_ControlGetText(L"Auto Shopfloor System v1.0.9", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:1]", catcher, 10000);
 
-    //Check AutoMES resultText
-    if(QString::fromWCharArray(catcher).length() > count)
-    {
-        socket->write("test fail");
-        qDebug() << "Send to socket >> test fail";
-    }else
-    {
-        socket->write("AutoMES ERROR");
-        qDebug() << "Send to socket >> AutoMES ERROR";
-    }
-}
+//    //Check AutoMES resultText
+//    if(QString::fromWCharArray(catcher).length() > count)
+//    {
+//        socket->write("test fail");
+//        qDebug() << "Send to socket >> test fail";
+//    }else
+//    {
+//        socket->write("AutoMES ERROR");
+//        qDebug() << "Send to socket >> AutoMES ERROR";
+//    }
+//}

@@ -4,6 +4,7 @@
 #include "task.h"
 #include <QTcpSocket>
 #include "mainwindow.h"
+#include "database.h"
 #include <QTimer>
 #include <QTime>
 #include <QFile>
@@ -18,8 +19,8 @@ Tooling::Tooling(QWidget *parent) :
     ui(new Ui::Tooling)
 {
     ui->setupUi(this);
-    dsn = QString("DRIVER={SQL Server};SERVER=%1;UID=sa;PWD=a123456;DATABASE=SmartFactory").arg(MainWindow::dbUrl);
-
+//    dsn = QString("DRIVER={SQL Server};SERVER=%1;UID=sa;PWD=a123456;DATABASE=SmartFactory").arg(MainWindow::dbUrl);
+    database = new Database(this, QString::number(toolingNumber), MainWindow::dbUrl);
     communication = new Communication(this, Communication::NO_ACK, Communication::CONNECT_TO_CLIENT);
 
 //    將狀態連結燈號, msgBox
@@ -38,10 +39,6 @@ Tooling::Tooling(QWidget *parent) :
     connect(&clockTimer, SIGNAL(timeout()), this, SLOT(clockUpdate()));
 
     connect(communication, SIGNAL(receiveMessage(QString,int,int)), this, SLOT(receiveMessage(QString,int,int)));
-
-    messageBox.setIcon(QMessageBox::Critical);
-    messageBox.setWindowTitle("Error");
-
 }
 
 Tooling::~Tooling()
@@ -123,13 +120,9 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
         result = "Fail";
     }
 
-//    更新Db
-//    insertDb("Final");
-//    updateDb("Final", result, 0);
-
-//    更新UI
-    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << "End Test" << result);
-    ui->treeWidget->insertTopLevelItem(0, item);
+    addTestUI("End test", result);
+    database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Final",dbVersion);
+    database->update(result, 0, SN, "Final",dbVersion, 0);
 
     initialTestList();
     initializeClock();
@@ -138,107 +131,97 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
 //接收到測試開始
 void Tooling::receive_TestStart(const QString &_testName)
 {
-    testStartTime = clockTime;
-
-//    更新UI
-    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << "testing" << testStartTime.toString());
-    ui->treeWidget->insertTopLevelItem(0, item);
-
-//    更新Db
-//    insertDb(_testName);
-}
-
-void Tooling::insertDb(const QString &_testName)
-{
-    //Check Db connection
-    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    db.setDatabaseName(dsn);
-    if(!db.open())
-        qCritical() << "Db open fail: " << db.lastError().text();
-
-    //Insert data to Db
-    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn, Version) "
-                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120), '%8')")
-                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(dbVersion);
-    QSqlQuery sq(db);
-    if(!sq.exec(cmdInsert))
-        qCritical() << "Db insert error.";
-
-    db.close();
+    if (updateTestUI(_testName, "testing")) {
+        int reTest = database->getReTest(SN, _testName, dbVersion);
+        database->update("testing", currentCycleSec, SN, _testName, dbVersion, ++reTest);
+    } else {
+            addTestUI(_testName, "testing");
+            database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, _testName, dbVersion);
+    }
 }
 
 //接收到單項測試結束
 void Tooling::receive_TestFinished(const QString &_testName, const int &_testResult)
 {
-    int testTime;
     QString result;
     if(_testResult == 1)
         result = "Pass";
     else
         result = "Fail";
 
-//    更新UI, Db
-    for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
-    {
-        if(ui->treeWidget->topLevelItem(i)->text(0) == _testName)
-        {
-            testTime = QTime::fromString(ui->treeWidget->topLevelItem(i)->text(2)).secsTo(clockTime);
-            ui->treeWidget->topLevelItem(i)->setText(1, result);
-            ui->treeWidget->topLevelItem(i)->setText(3, QString::number(testTime));
-//            updateDb(_testName, result, testTime);
-        }
-    }
+    updateTestUI(_testName, result);
+    int reTest = database->getReTest(SN, _testName, dbVersion);
+    database->update(result, currentCycleSec, SN, _testName, dbVersion, reTest);
 }
 
-void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
-{
-    QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
-                                .arg(_result).arg(_testTime).arg(SN).arg(_testName);
+//void Tooling::insertDb(const QString &_testName)
+//{
+//    //Check Db connection
+//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+//    db.setDatabaseName(dsn);
+//    if(!db.open())
+//        qCritical() << "Db open fail: " << db.lastError().text();
 
-    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    db.setDatabaseName(dsn);
+//    //Insert data to Db
+//    QString cmdInsert = QString("insert into RobotDashboard (ToolNo, MLocation, MO, PN, SN, MAC, TestingItem, CreateOn, Version) "
+//                                "values ('%1', %2, '%3', '%4', '%5', '%6', '%7', convert(varchar, getdate(), 120), '%8')")
+//                                .arg(toolingSN).arg(toolingNumber).arg(MO).arg(PN).arg(SN).arg(MAC).arg(_testName).arg(dbVersion);
+//    QSqlQuery sq(db);
+//    if(!sq.exec(cmdInsert))
+//        qCritical() << "Db insert error.";
 
-    if(!db.open())
-        qCritical() << "Db open fail: " << db.lastError().text();
+//    db.close();
+//}
 
-    QSqlQuery sq(db);
+//void Tooling::updateDb(const QString &_testName, const QString &_result, int _testTime)
+//{
+//    QString cmdUpdate = QString("update RobotDashboard set Result = '%1', CycleTime = %2 where SN = '%3' and testingItem = '%4'")
+//                                .arg(_result).arg(_testTime).arg(SN).arg(_testName);
 
-    if(!sq.exec(cmdUpdate))
-        qCritical() << "Db update error.";
+//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+//    db.setDatabaseName(dsn);
 
-    db.close();
-}
+//    if(!db.open())
+//        qCritical() << "Db open fail: " << db.lastError().text();
+
+//    QSqlQuery sq(db);
+
+//    if(!sq.exec(cmdUpdate))
+//        qCritical() << "Db update error.";
+
+//    db.close();
+//}
 
 //更新同一序號重測次數到Db
-void Tooling::updateDbVersion()
-{
-    //Check Db connection
-    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
-    db.setDatabaseName(dsn);
-    if(!db.open())
-        qCritical() << "Db open fail: " << db.lastError().text();
+//void Tooling::updateDbVersion()
+//{
+//    //Check Db connection
+//    QSqlDatabase db = QSqlDatabase::addDatabase("QODBC");
+//    db.setDatabaseName(dsn);
+//    if(!db.open())
+//        qCritical() << "Db open fail: " << db.lastError().text();
 
-    //Get Max Version of test on Db
-    QString cmdSelect = QString("select MAX(Version) from RobotDashboard where SN = '%1'").arg(SN);
-    QSqlQuery sq(db);
-    if(!sq.exec(cmdSelect))
-        qCritical() << "Db select error.";
+//    //Get Max Version of test on Db
+//    QString cmdSelect = QString("select MAX(Version) from RobotDashboard where SN = '%1'").arg(SN);
+//    QSqlQuery sq(db);
+//    if(!sq.exec(cmdSelect))
+//        qCritical() << "Db select error.";
 
-    //if Max Version = NULL, Version = 1, First time insert
-    //if Max Version != NULL, update version, ++Version
-    sq.next();
-    dbVersion = sq.value(0).toInt();
-    qDebug() << "version1 : " << dbVersion;
-    if(dbVersion==0)
-        dbVersion=1;
-    else
-        ++dbVersion;
-    qDebug() << "version2 : " << dbVersion;
-}
+//    //if Max Version = NULL, Version = 1, First time insert
+//    //if Max Version != NULL, update version, ++Version
+//    sq.next();
+//    dbVersion = sq.value(0).toInt();
+//    qDebug() << "version1 : " << dbVersion;
+//    if(dbVersion==0)
+//        dbVersion=1;
+//    else
+//        ++dbVersion;
+//    qDebug() << "version2 : " << dbVersion;
+//}
 
 void Tooling::toolDisconnect()
 {
-    MainWindow::systemState = MainWindow::STOP;
+//    MainWindow::systemState = MainWindow::STOP;
 
     //斷線
     if(communication->state_Connection == Communication::ONLINE)
@@ -258,7 +241,10 @@ void Tooling::toolDisconnect()
             task->deleteNextAll();
         }
     }
-    QMessageBox::information(this, "info", "Tooling "+ QString::number(toolingNumber) +" is ready to move.", QMessageBox::Cancel);
+    messageBox.setWindowTitle("info");
+    messageBox.setText("Tooling " + QString::number(toolingNumber) + " is ready to move.");
+    messageBox.setIcon(QMessageBox::Information);
+    messageBox.show();
     disconnectFlag = false;
 }
 
@@ -331,6 +317,27 @@ void Tooling::getMoBySN(const QString &_SN)
     return;
 }
 
+bool Tooling::updateTestUI(const QString &_testName, const QString &_status)
+{
+    for(int i = 0; i < ui->treeWidget->topLevelItemCount(); i++)
+    {
+        if(ui->treeWidget->topLevelItem(i)->text(0) == _testName)
+        {
+            currentCycleSec = QTime::fromString(ui->treeWidget->topLevelItem(i)->text(2)).secsTo(clockTime);
+            ui->treeWidget->topLevelItem(i)->setText(3, QString::number(currentCycleSec));
+            ui->treeWidget->topLevelItem(i)->setText(1, _status);
+            return true;
+        }
+    }
+    return false;
+}
+
+void Tooling::addTestUI(const QString &_testName, const QString &_status)
+{
+    QTreeWidgetItem *item = new QTreeWidgetItem(QStringList() << _testName << _status << clockTime.toString());
+    ui->treeWidget->insertTopLevelItem(0, item);
+}
+
 //接收MAC (from ccd)
 void Tooling::receiveMAC(const QString &_MAC, const int &_toolingNumber)
 {
@@ -372,8 +379,12 @@ void Tooling::excuteTask(const Task &_task)
         }
         clockTimer.start(1000);
         sendToClient_SN_MAC();
-//        updateDbVersion();
 //        更新Db
+        dbVersion = database->getMaxVersion(SN);
+        ++dbVersion;
+        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Start", dbVersion);
+        database->update("Pass", 0, SN, "Start", dbVersion, 0);
+//        updateDbVersion();
 //        insertDb("Start");
 //        updateDb("Start", "Pass", 0);
         emit excuteTaskByRobot(_task);
@@ -541,6 +552,8 @@ void Tooling::initialTestList()
 
 void Tooling::errorManage(const QString &_str)
 {
+    messageBox.setIcon(QMessageBox::Critical);
+    messageBox.setWindowTitle("Error");
     messageBox.setText(_str);
     messageBox.show();
     qCritical() << _str;
