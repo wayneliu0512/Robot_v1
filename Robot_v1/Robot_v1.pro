@@ -33,7 +33,8 @@ SOURCES += main.cpp\
     light.cpp \
     prescangroupbox.cpp \
     dynamicsetting.cpp \
-    base.cpp
+    base.cpp \
+    database.cpp
 
 HEADERS  += mainwindow.h \
     communication.h \
@@ -45,7 +46,8 @@ HEADERS  += mainwindow.h \
     light.h \
     prescangroupbox.h \
     dynamicsetting.h \
-    base.h
+    base.h \
+    database.h
 
 FORMS    += mainwindow.ui \
     tooling.ui \
