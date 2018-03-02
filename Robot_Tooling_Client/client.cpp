@@ -280,10 +280,9 @@ bool Client::controlWAutoMESProgram_PASS()
     SN.toWCharArray(SN_char);
     MAC1.toWCharArray(MAC1_char);
 
-    //Count AutoMES resultText length
+    //Set resultText to empty
     AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
-    AU3_ControlGetText(L"Auto Shopfloor System v1.0.11", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:5]", catcher, 10000);
-    int count = QString::fromWCharArray(catcher).length();
+    AU3_ControlSetText(L"Auto Shopfloor System v1.0.11", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:5]", L"");
 
     //Serial Number textbox
     AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
@@ -300,20 +299,17 @@ bool Client::controlWAutoMESProgram_PASS()
         AU3_ControlClick(L"Message", L"", L"[CLASS:Button; INSTANCE:1]", L"left", 1);
     }
 
-    //Count AutoMES resultText length
-    QThread::sleep(2);
+    //Check resultText contains "SN" and "OK"
     AU3_WinActivate(L"Auto Shopfloor System v1.0.11", L"");
     AU3_ControlGetText(L"Auto Shopfloor System v1.0.11", L"",L"[CLASS:ThunderRT6TextBox; INSTANCE:5]", catcher, 10000);
-
-    //Check AutoMES resultText
-    if(QString::fromWCharArray(catcher).length() > count)
-    {
+    QString resultText = QString::fromWCharArray(catcher);
+    if (resultText.contains(SN + ";OK")) {
         return true;
-    }else
-    {
+    } else {
         return false;
     }
 }
+
 //FAIL過後藉由AutoMES 過站
 //void Client::controlWAutoMESProgram_FAIL()
 //{

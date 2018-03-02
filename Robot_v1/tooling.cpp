@@ -194,7 +194,7 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
     SN = _SN;
     ui->label_SN->setText(SN);
 
-    getMoBySN(SN);
+//    getMoBySN(SN);
 }
 
 //取得Mo from WebService
