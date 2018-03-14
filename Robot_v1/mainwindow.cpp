@@ -252,7 +252,7 @@ void MainWindow::help()
 
 void MainWindow::about()
 {
-    QMessageBox::aboutQt(this);
+    QMessageBox::information(this, QApplication::applicationName(), "Version: " + QApplication::applicationVersion());
 }
 
 void MainWindow::createMenus()

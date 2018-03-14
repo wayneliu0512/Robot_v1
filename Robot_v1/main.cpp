@@ -37,9 +37,10 @@ void myMessageHandler(QtMsgType type, const QMessageLogContext &, const QString 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
+    a.setApplicationName("Robot Automation");
+    a.setApplicationVersion("1.01.01");
 
     QDir dir("DebugLog");
-
     if(!dir.exists())
     {
         QMessageBox::critical(0, "Error", "DebugLog folder doesn't exist.");

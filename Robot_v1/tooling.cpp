@@ -118,8 +118,8 @@ void Tooling::receive_AllTestFinished(const int &_testResult)
 //    更新UI
     addTestUI("End test", result);
 //    更新Db
-//    database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Final",dbVersion);
-//    database->update(result, 0, SN, "Final",dbVersion, 0);
+    database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Final",dbVersion);
+    database->update(result, 0, SN, "Final",dbVersion, 0);
 
     initialTestList();
     initializeClock();
@@ -131,13 +131,13 @@ void Tooling::receive_TestStart(const QString &_testName)
 //    更新UI
     if (updateTestUI(_testName, "testing")) {
 //        更新Db
-//        int reTest = database->getReTest(SN, _testName, dbVersion);
-//        database->update("testing", currentCycleSec, SN, _testName, dbVersion, ++reTest);
+        int reTest = database->getReTest(SN, _testName, dbVersion);
+        database->update("testing", currentCycleSec, SN, _testName, dbVersion, ++reTest);
     } else {
 //        更新UI
         addTestUI(_testName, "testing");
 //        更新Db
-//        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, _testName, dbVersion);
+        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, _testName, dbVersion);
     }
 }
 
@@ -194,7 +194,7 @@ void Tooling::receiveSN(const QString &_SN, const int &_toolingNumber)
     SN = _SN;
     ui->label_SN->setText(SN);
 
-//    getMoBySN(SN);
+    getMoBySN(SN);
 }
 
 //取得Mo from WebService
@@ -320,10 +320,10 @@ void Tooling::excuteTask(const Task &_task)
         clockTimer.start(1000);
         sendToClient_SN_MAC();
 //        更新Db
-//        dbVersion = database->getMaxVersion(SN);
-//        ++dbVersion;
-//        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Start", dbVersion);
-//        database->update("Pass", 0, SN, "Start", dbVersion, 0);
+        dbVersion = database->getMaxVersion(SN);
+        ++dbVersion;
+        database->insert(toolingSN, toolingNumber, MO, PN, SN, MAC, "Start", dbVersion);
+        database->update("Pass", 0, SN, "Start", dbVersion, 0);
 
         emit excuteTaskByRobot(_task);
     }
